@@ -1,6 +1,10 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import FadeInSection from "../components/FadeInSection";
+
+
+
 
 export default function Home() {
   const [timeLeft, setTimeLeft] = useState({
@@ -37,7 +41,7 @@ return (
   
 
 
-    <div className="min-h-screen overflow-y-scroll">
+    <main className="animate-fade-in-pop min-h-screen overflow-y-scroll">
       <header className="w-full bg-amber-500 py-6 px-8 rounded-b-[40px]">
         <div className="w-full text-center">
           <div className="w-full bg-amber-500 px-10 py-4 text-white font-bold text-xl">
@@ -73,7 +77,9 @@ return (
           </div>
         </div>
 
-        {/* Countdown Timer Below the Image */}
+        <FadeInSection>
+
+          {/* Countdown Timer Below the Image */}
       <div className="bg-amber-500 text-white p-4 rounded-xl text-2xl font-bold my-10">
         <p>
           {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
@@ -81,8 +87,19 @@ return (
         <p className="text-sm text-white">until the big day!</p>
       </div>
 
+
+        </FadeInSection>
+
+        
+
+        
+
+
+
         {/* About Section */}
-        <section id="about" className="mt-24 w-full max-w-6xl px-4">
+
+        <FadeInSection>
+          <section id="about" className="mt-24 w-full max-w-6xl px-4">
           <h2 className="text-4xl font-bold text-white mb-12 text-center">About</h2>
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-10">
@@ -130,13 +147,26 @@ return (
               
         </section>
 
+
+        </FadeInSection>
+        
+      <FadeInSection>
+
         {/* RSVP Section */}
         <section id="rsvp" className="mt-32 w-full px-6 py-16 text-center bg-transparent">
           <h2 className="text-3xl font-script font-bold text-white mb-4">We Invite you</h2>
           <h3 className="text-2xl font-script text-white mb-2">to Celebrate our Wedding</h3>
           <p className="text-xl font-script text-white mb-10">--RSVP--</p>
 
-          <form className="max-w-md mx-auto space-y-6">
+          <form
+
+           className="max-w-md mx-auto space-y-6"
+           onSubmit={(e) => {
+            e.preventDefault();
+            window.location.href = "/thank-you";
+            }}
+          >
+
             <div className="flex flex-col items-start">
               <label htmlFor="firstName" className="text-white text-left w-full mb-1">First name</label>
               <input
@@ -182,7 +212,13 @@ return (
           </form>
         </section>
 
-        {/* Map Section */}
+
+      </FadeInSection>
+        
+
+        <FadeInSection>
+
+          {/* Map Section */}
         <section id="map" className="mt-20 w-full max-w-6xl text-center">
           <h2 className="text-4xl font-script text-white mb-4">Wedding</h2>
           <p className="text-xl font-script text-white mb-10">Map</p>
@@ -236,7 +272,13 @@ return (
           </div>
         </section>
 
-           {/* Dress Code Section */}
+
+
+        </FadeInSection>
+
+        <FadeInSection>
+
+          {/* Dress Code Section */}
         <section id="dresscode" className="mt-32 w-full text-center">
           <div className="mb-0 mt-10">
             <h2 className="text-4xl font-script text-white">-- Dress code --</h2>
@@ -263,9 +305,15 @@ return (
           </div>
         </section>
 
-        {/* Schedule Section */}
-        <section id="schedule" className="mt-10 w-full text-center text-white font-script">
-          <h2 className="text-4xl mb-8">-- Schedule --</h2>
+
+        </FadeInSection>
+        
+           
+
+        <FadeInSection>
+          {/* Schedule Section */}
+          <section id="schedule" className="mt-10 w-full text-center text-white font-script">
+            <h2 className="text-4xl mb-8">-- Schedule --</h2>
           <div className="max-w-3xl mx-auto text-left text-xl leading-loose">
             <p><strong className="text-amber-500">2:00 PM – Ceremony</strong><br />Shrine Church of Our Lady of the Rockies<br /><em>Join us as we say "I do" in a sacred and joyful celebration of our love.</em></p>
             <br />
@@ -273,10 +321,12 @@ return (
             <br />
             <p><strong className="text-amber-500">6:00 PM – Reception</strong><br />The Malcolm Hotel, Canmore<br /><em>Let the celebration begin! Dinner, speeches, dancing, and unforgettable memories to follow.</em></p>
           </div>
-        </section>
+          </section>
+        </FadeInSection>
 
-        {/* Contacts Section */}
-        <section id="contact" className="mt-20 w-full flex justify-center">
+        <FadeInSection>
+          {/* Contacts Section */}
+          <section id="contact" className="mt-20 w-full flex justify-center">
           <div className="bg-[#935774] rounded-t-[40px] px-10 py-8 w-full text-center font-script text-white">
             <h2 className="text-3xl text-white mb-4">-- Contacts --</h2>
             <p className="text-amber-300">Kristen (403) XXX XXXX</p>
@@ -286,12 +336,13 @@ return (
             <p className="text-amber-300">johndeleon233@gmail.com</p>
           </div>
         </section>
+        </FadeInSection>
 
          
        </main>
 
 
-    </div>
+    </main>
 
     
       
