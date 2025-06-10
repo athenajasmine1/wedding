@@ -1,9 +1,16 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
+
+.font-great-vibes {
+  font-family: 'Great Vibes', cursive;
+}
+
 
 @theme inline {
   --color-background: var(--background);

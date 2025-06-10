@@ -1,8 +1,18 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+
 export default function ThankYouPage() {
+  const searchParams = useSearchParams();
+  const firstName = searchParams.get("firstName");
+  const lastName = searchParams.get("lastName");
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-purple-100 text-center p-8">
-      <h1 className="text-4xl font-bold text-amber-600 mb-4">Thank You!</h1>
-      <p className="text-2xl text-gray-700">We’re excited to see you at the wedding 💍</p>
+    <div className="min-h-screen flex flex-col justify-center items-center text-center p-8 bg-cover bg-center" style={{ backgroundImage: "url('/backg1.png')" }}>
+      <h1 className="text-6xl font-great-vibes text-white mb-6">Thank You, {firstName} {lastName}!</h1>
+      <p className="text-4xl text-white font-great-vibes">Your confirmation has been received. 💍</p>
+      <p className="text-3xl text-white font-great-vibes mt-4">A Confirmation email will be sent to you shortly.</p>
     </div>
   );
 }
