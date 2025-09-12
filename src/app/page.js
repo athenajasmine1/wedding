@@ -1,373 +1,466 @@
 "use client";
+
+import FadeInSection from "@/components/FadeInSection";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import FadeInSection from "../components/FadeInSection";
-
-
-
 
 export default function Home() {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  return (
+    <main className="bg-[#e9ded3] font-sans">
+      <FadeInSection>
+        <section
+        id="home"
+        className="relative w-full h-screen flex items-center justify-center"
+      >
 
-  useEffect(() => {
-    const targetDate = new Date("2026-04-25T00:00:00");
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const difference = targetDate - now;
-
-      if (difference <= 0) {
-        clearInterval(interval);
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((difference / (1000 * 60)) % 60);
-      const seconds = Math.floor((difference / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-return (
-  
-
-
-    <main className="animate-fade-in-pop min-h-screen">
-
-      <header className="sticky top-0 z-50 bg-amber-500 py-6 px-8 rounded-b-[40px] shadow-lg">
-
-
-        <div className="w-full text-center">
-          <div className="w-full bg-amber-500 px-10 py-4 text-white font-bold text-3xl">
-            <div className="flex justify-between items-center max-w-full">
-              <h1 className="text-white text-4xl font-great-vibes">John & Kristen</h1>
-              <nav className="flex space-x-10 font-semibold">
-                <a href="#home" className="text-white hover:underline font-great-vibes">Home</a>
-                <a href="#about" className="text-white hover:underline font-great-vibes">About</a>
-                <a href="#rsvp" className="text-white hover:underline font-great-vibes">RSVP</a>
-                <a href="#map" className="text-white hover:underline font-great-vibes">Wedding</a>
-                <a href="#contact" className="text-white hover:underline font-great-vibes">Contact</a>
-              </nav>
+      <Image
+          src="/holding.png"
+          alt="Couple"
+          fill
+          className="object-cover brightness-75"
+          priority
+        />
+        
+      {/* header OVER the image (no space) */}
+        <header className="absolute inset-x-0 top-0 z-50">
+          {/* Top name bar */}
+          <div className="w-full bg-[#f6efe9]/90 backdrop-blur">
+            <div className="max-w-6xl mx-auto px-6 py-4">
+              <h1 className="text-center font-serif text-2xl md:text-3xl tracking-[0.35em] uppercase text-[#3e3a37]">
+                JOHN & KRISTINE
+              </h1>
             </div>
+            <div className="border-b border-[#d9cfc7]" />
           </div>
+
+        {/* Slim nav strip */}
+          <nav className="w-full bg-[#e9ded3]/90 backdrop-blur">
+            <div className="max-w-6xl mx-auto px-6">
+              <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#3e3a37]">
+                <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
+                <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
+                <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
+                <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
+                <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
+              </ul>
+            </div>
+          </nav>
+        </header>
+
+        <div className="relative z-10 text-center">
+          <h1 className="text-6xl md:text-8xl font-serif tracking-wide  text-white">
+            JOHN & KRISTEN
+          </h1>
+          <p className="mt-4 text-2xl font-great-vibes italic  text-white">
+            are getting married!
+          </p>
+          <p className="mt-2 text-lg tracking-widest  text-white">APRIL 25, 2026</p>
         </div>
-      </header>
+      </section>
+      
+      </FadeInSection>
 
-       <main className="flex flex-col items-center justify-start min-h-screen p-8 pt-20">
-        {/* Holding Hands Image with Centered Date Overlay */}
-        <div id="home" className="relative overflow-hidden rounded-[40px] w-[730px] h-[550px] mt-20">
-  <Image
-    className="rounded-xl object-cover w-full h-full"
-    src="/holding.png"
-    alt="Holding Hands"
-    width={730}
-    height={730}
-    priority
-  />
-  <div className="absolute inset-0 flex items-center justify-center">
-    <span className="text-white text-3xl font-bold px-6 py-2 rounded-full">
-      04.25.2026
-    </span>
-  </div>
-</div>
+      {/* Love Story */}
+      <FadeInSection>
+        <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12">
+        {/* Text */}
+        <div className="md:w-1/2">
+          <h2 className="text-4xl font-great-vibes mb-6">
+            This is our love story
+          </h2>
+          <p className="leading-relaxed text-black mb-4">
+            They say love knows no boundaries—and in our case, no screen time
+            limits either.
+          </p>
+          <p className="leading-relaxed text-black mb-4">
+            We met through Singles for Christ and our first few chats turned
+            into hours of conversation. Then into a date that lasted far too
+            long—in the best way.
+          </p>
+          <p className="leading-relaxed text-black">
+            Since then we’ve been inseparable—sharing laughs, adventures, and
+            endless playlists. From digital spark to real life forever.
+          </p>
+        </div>
+        {/* Image */}
+        <div className="md:w-1/2 rounded-2xl overflow-hidden">
+          <Image
+            src="/about1.jpeg"
+            alt="Couple photo"
+            width={600}
+            height={400}
+            className="object-cover"
+          />
+        </div>
+      </section>      
+      </FadeInSection>
 
-        <FadeInSection>
-
-          {/* Countdown Timer Below the Image */}
-      <div className="bg-amber-500 text-white p-4 rounded-xl text-2xl font-bold my-10">
-        <p>
-          {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-        </p>
-        
-      </div>
-
-
-        </FadeInSection>
-
-        
-
-        
-
-
-
-        {/* About Section */}
-
-        <FadeInSection>
-          <section id="about" className="mt-24 w-full max-w-6xl px-4">
-          <h2 className="text-6xl font-great-vibes text-white mb-12 text-center">About</h2>
-
-          <div className="flex flex-col md:flex-row items-center justify-center gap-10">
-            {/* Left image */}
-            <div className="w-[300px] h-[300px] rounded-3xl overflow-hidden flex-shrink-0">
-              <Image
-                className="object-cover"
-                src="/about1.jpeg"
-                alt="John and Kristen"
-                width={300}
-                height={300}
-              />
-            </div>
-
-            {/* Right paragraph */}
-            <div className="text-white text-2xl max-w-xl text-center md:text-left font-great-vibes">
-              <p>
-                John and Kristen met through Singles for Christ, a church group, and from the very first conversation during a fellowship, something just clicked. It wasn’t long before they started noticing each other a little more—especially during the next event, when they caught each other glancing from opposite sides of the room. That moment gave John the push he needed to ask Kristen out for coffee.
-              </p>
-            </div>
-          </div>
-
-           {/* Second Row */}
-          <div className="flex flex-col md:flex-row-reverse items-center justify-center gap-10">
-            <div className="w-[300px] h-[300px] rounded-3xl overflow-hidden flex-shrink-0">
-              <Image
-                className="object-cover w-full h-full"
-                src="/about2.jpeg"
-                alt="Dinner date"
-                width={400}
-                height={400}
-              />
-            </div>
-            <div className="text-white text-2xl max-w-xl text-center md:text-left font-great-vibes">
-              <p>
-                Coffee turned into dinner. Their first plan was to meet on a Thursday, but John, clearly eager, asked her out for Monday instead. She agreed. On the way to dinner, Kristen asked if this was in place of Thursday. John simply asked, “Would you still like to meet then?” She replied, “Depends on how tonight goes.”
-              </p>
-              <br />
-              <p>
-                Well—Thursday happened. Safe to say that this first date would secure the rest of their Thursdays after that.
-              </p>
-            </div>
-          </div>
-          
-              
-        </section>
-
-
-        </FadeInSection>
-        
       <FadeInSection>
 
-        {/* RSVP Section */}
-
-        <section id="rsvp" className="mt-32 w-full px-6 py-16 text-center bg-transparent">
-  <h2 className="text-5xl font-great-vibes text-white mb-4">We Invite you</h2>
-  <h3 className="text-4xl font-great-vibes text-white mb-2">to Celebrate our Wedding</h3>
-  <p className="text-3xl font-great-vibes text-white mb-10">--RSVP--</p>
-
-  <form
-    className="max-w-md mx-auto space-y-6"
-    onSubmit={(e) => {
-      e.preventDefault();
-      const firstName = e.target.firstName.value;
-      const lastName = e.target.lastName.value;
-      window.location.href = `/thank-you?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`;
-    }}
-  >
-    <div className="flex flex-col items-start">
-      <label htmlFor="firstName" className="text-white text-left w-full mb-1 font-great-vibes text-3xl">First name</label>
-      <input
-        id="firstName"
-        name="firstName"
-        type="text"
-        className="w-full rounded-full px-6 py-2 bg-white text-black focus:outline-none"
+        <section id="rsvp" className="bg-[#efe7df] text-[#3e3a37]">
+    {/* Photo header */}
+    <div className="relative w-full h-[40vh] min-h-[320px]">
+      <Image
+        src="/about2.jpeg"           // <-- your image
+        alt="John & Kristen"
+        fill
+        className="object-cover"
+        priority
       />
+      {/* subtle dark overlay for legibility */}
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+        <h1 className="text-4xl md:text-6xl font-serif tracking-wide text-white">
+          JOHN & KRISTINE
+        </h1>
+        <p className="mt-3 text-xl md:text-2xl text-white/90 font-great-vibes italic">
+          are getting married
+        </p>
+        <p className="mt-2 text-sm md:text-base tracking-[0.35em] text-white/90">
+          APRIL 25, 2026 • CANMORE, ALBERTA
+        </p>
+      </div>
     </div>
-    <div className="flex flex-col items-start">
-      <label htmlFor="lastName" className="text-white text-left w-full mb-1 font-great-vibes text-3xl">Last name</label>
-      <input
-        id="lastName"
-        name="lastName"
-        type="text"
-        className="w-full rounded-full px-6 py-2 bg-white text-black focus:outline-none"
-      />
-    </div>
-    <div className="flex flex-col items-start">
-      <label htmlFor="email" className="text-white text-left w-full mb-1 font-great-vibes text-3xl">Email</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        className="w-full rounded-full px-6 py-2 bg-white text-black focus:outline-none"
-      />
-    </div>
-    <div className="flex flex-col items-start">
-      <label htmlFor="number" className="text-white text-left w-full mb-1 font-great-vibes text-3xl">Number</label>
-      <input
-        id="number"
-        name="number"
-        type="text"
-        className="w-full rounded-full px-6 py-2 bg-white text-black focus:outline-none"
-      />
-    </div>
-    <button
-      type="submit"
-      className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-2 rounded-full shadow-lg font-great-vibes text-2xl"
-    >
-      Submit
-    </button>
-  </form>
-</section>
 
+    {/* Copy + Form */}
+    <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
+      {/* Headings */}
+      <div className="text-center mb-10 md:mb-14">
+        <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">
+          we invite you to
+        </p>
+        <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
+          Celebrate Our Wedding
+        </h2>
+        <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
+          Please confirm your presence through the RSVP form by <strong>07.15.2025</strong>.
+        </p>
+      </div>
 
+      {/* Card */}
+      <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Simple success UX; swap with your redirect if you prefer
+            const data = new FormData(e.currentTarget);
+            const first = data.get("firstName");
+            const last = data.get("lastName");
+            window.location.href = `/thank-you?firstName=${encodeURIComponent(
+              String(first || "")
+            )}&lastName=${encodeURIComponent(String(last || ""))}`;
+          }}
+        >
+          {/* First / Last */}
+          <div className="flex flex-col">
+            <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
+              First name
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              required
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="e.g., Kristen"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
+              Last name
+            </label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              required
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="e.g., Mendoza"
+            />
+          </div>
 
+          {/* Email / Phone */}
+          <div className="flex flex-col">
+            <label htmlFor="email" className="text-xs uppercase tracking-widest mb-2">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="phone" className="text-xs uppercase tracking-widest mb-2">
+              Phone (optional)
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="(xxx) xxx-xxxx"
+            />
+          </div>
+
+          {/* Attendance (radios) */}
+          <div className="flex flex-col md:col-span-2">
+            <span className="text-xs uppercase tracking-widest mb-2">
+              Will you attend?
+            </span>
+            <div className="flex items-center gap-6">
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="attending"
+                  value="yes"
+                  defaultChecked
+                  className="accent-[#c8b6a6]"
+                />
+                <span>Yes, can’t wait!</span>
+              </label>
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="attending"
+                  value="no"
+                  className="accent-[#c8b6a6]"
+                />
+                <span>Sorry, can’t make it</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Guests / Dietary */}
+          <div className="flex flex-col">
+            <label htmlFor="guests" className="text-xs uppercase tracking-widest mb-2">
+              Number of guests (including you)
+            </label>
+            <select
+              id="guests"
+              name="guests"
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              defaultValue="1"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="diet" className="text-xs uppercase tracking-widest mb-2">
+              Dietary restrictions (optional)
+            </label>
+            <input
+              id="diet"
+              name="diet"
+              type="text"
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="Allergies, vegetarian, etc."
+            />
+          </div>
+
+          {/* Message */}
+          <div className="flex flex-col md:col-span-2">
+            <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">
+              Anything else?
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows={4}
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="Song requests, notes for the couple…"
+            />
+          </div>
+
+          {/* Submit */}
+          <div className="md:col-span-2 flex justify-center pt-2">
+            <button
+              type="submit"
+              className="px-8 py-3 rounded-full bg-[#c8b6a6] text-white tracking-wide hover:bg-[#b9a797] transition"
+            >
+              Submit RSVP
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* small note */}
+      <p className="mt-6 text-center text-xs text-[#6b5a4e]">
+        If plans change after submitting, please reach out so we can update seating & meals.
+      </p>
+    </div>
+  </section>      
       </FadeInSection>
-        
 
-        <FadeInSection>
+    <FadeInSection>
+      {/* WEDDING TIMELINE */}
+<section id="wedding" className="w-full bg-[#e6d8c7] text-[#2b2a28] py-16 md:py-24">
+  {/* Constrain everything to a centered column */}
+  <div className="mx-auto max-w-4xl px-6">
+    {/* Title */}
+    <h2 className="text-center font-serif tracking-[0.25em] text-4xl md:text-5xl uppercase mb-12">
+      Wedding<br className="hidden md:block" /> Timeline
+    </h2>
 
-          {/* Map Section */}
-<section id="map" className="mt-20 w-full max-w-6xl text-center font-great-vibes">
-  <h2 className="text-5xl text-white mb-4">Wedding</h2>
-  <p className="text-4xl text-white mb-10">Map</p>
-  <p className="text-3xl text-white mb-10">The Shrine Church of Our Lady of the Rockies</p>
+    {/* The grid that holds both columns AND the center line */}
+    <div className="relative mx-auto max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-y-10 md:gap-y-16">
+      {/* center vertical line (inside same relative box) */}
+      <div className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-[#2b2a28]/50 z-0" />
 
-  <div className="flex flex-col md:flex-row justify-center gap-6 mb-6">
-    <div className="rounded-3xl overflow-hidden w-[300px] h-[220px]">
+      {/* LEFT column */}
+      <div className="md:pr-12 space-y-10 md:space-y-12">
+        {[
+          ["1:00 PM", "Bride & Groom Get Dressed"],
+          ["2:00 PM", "Wedding Party Photos"],
+          ["3:00 PM", "Couple Hides for Ceremony"],
+          ["4:00 PM", "Cocktail Hour Begins"],
+          ["4:50 PM", "Prep for Grand Entrance"],
+          ["5:15 PM", "Dinner Served"],
+          ["6:00 PM", "Speeches"],
+        ].map(([time, label]) => (
+          <div key={time} className="relative md:text-right z-10">
+            <span className="hidden md:block absolute right-[-7px] top-2 h-3 w-3 rounded-full bg-[#2b2a28]" />
+            <p className="font-semibold text-sm tracking-wider">{time}</p>
+            <p className="uppercase text-xs opacity-80">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* RIGHT column */}
+      <div className="md:pl-12 space-y-10 md:space-y-12">
+        {[
+          ["11:30 AM", "Photographer Arrives"],
+          ["1:45 PM", "First Look"],
+          ["2:30 PM", "Family Group Photos"],
+          ["3:30 PM", "Ceremony"],
+          ["4:30 PM", "Remaining Group Photos"],
+          ["5:00 PM", "Grand Entrance"],
+          ["7:20 PM", "Cake Cutting"],
+          ["7:30 PM", "Party & Dancing"],
+        ].map(([time, label]) => (
+          <div key={time} className="relative z-10">
+            <span className="hidden md:block absolute left-[-7px] top-2 h-3 w-3 rounded-full bg-[#2b2a28]" />
+            <p className="font-semibold text-sm tracking-wider">{time}</p>
+            <p className="uppercase text-xs opacity-80">{label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>  
+    </FadeInSection>
+
+    <FadeInSection>
+      {/* DETAILS */}
+
+      <section id="details" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
+  <h2 className="text-center text-4xl font-great-vibes mb-2">The details</h2>
+  <p className="text-center text-sm tracking-widest mb-8">
+    Ceremony & Reception locations with photos and maps
+  </p>
+
+  {/* CEREMONY — The Shrine Church of Our Lady of the Rockies */}
+  <div className="flex flex-col md:flex-row items-center gap-10">
+    {/* Photo */}
+    <div className="md:w-1/2 rounded-2xl overflow-hidden">
       <Image
-        className="object-cover w-full h-full"
         src="/church.jpeg"
-        alt="Church"
-        width={300}
-        height={220}
+        alt="The Shrine Church of Our Lady of the Rockies"
+        width={800}
+        height={500}
+        className="object-cover w-full h-auto"
+        priority
       />
     </div>
-    <div className="rounded-3xl overflow-hidden w-[300px] h-[220px]">
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.065513197622!2d-115.34850228418657!3d51.08929187956756!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51c25415555%3A0xf01665e84e731c2f!2sOur%20Lady%20of%20the%20Rockies%20Catholic%20Church!5e0!3m2!1sen!2sca!4v1717677708000!5m2!1sen!2sca"
-        width="100%"
-        height="100%"
-        style={{ border: 0 }}
-        allowFullScreen=""
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      ></iframe>
+    {/* Text + Map */}
+    <div className="md:w-1/2 w-full">
+      <h3 className="font-serif text-2xl mb-2">Ceremony</h3>
+      <p className="font-great-vibes text-3xl mb-2">The Shrine Church of Our Lady of the Rockies</p>
+      <p className="text-sm opacity-80 mb-4">51.0893° N, 115.3485° W — Canmore, AB</p>
+      <div className="rounded-2xl overflow-hidden w-full h-[260px]">
+        <iframe
+          title="Our Lady of the Rockies Catholic Church Map"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.065513197622!2d-115.34850228418657!3d51.08929187956756!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51c25415555%3A0xf01665e84e731c2f!2sOur%20Lady%20of%20the%20Rockies%20Catholic%20Church!5e0!3m2!1sen!2sca!4v1717677708000!5m2!1sen!2sca"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      </div>
     </div>
   </div>
 
-  <p className="text-3xl text-white mb-10">The Malcolm Reservation Canmore</p>
-  <div className="flex flex-col md:flex-row-reverse justify-center gap-6">
-    <div className="rounded-3xl overflow-hidden w-[300px] h-[220px]">
+  {/* RECEPTION — The Malcolm Hotel, Canmore */}
+  <div className="flex flex-col md:flex-row-reverse items-center gap-10">
+    {/* Photo */}
+    <div className="md:w-1/2 rounded-2xl overflow-hidden">
       <Image
-        className="object-cover w-full h-full"
         src="/hotel.jpeg"
-        alt="Hotel"
-        width={300}
-        height={220}
+        alt="The Malcolm Hotel, Canmore"
+        width={800}
+        height={500}
+        className="object-cover w-full h-auto"
       />
     </div>
-    <div className="rounded-3xl overflow-hidden w-[300px] h-[220px]">
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.0655738298505!2d-115.3521680841865!3d51.08929077956713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51d7e0c4eb7%3A0xe86991ce4b1d55fc!2sThe%20Malcolm%20Hotel%20by%20CLIQUE!5e0!3m2!1sen!2sca!4v1717677808000!5m2!1sen!2sca"
-        width="100%"
-        height="100%"
-        style={{ border: 0 }}
-        allowFullScreen=""
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      ></iframe>
+    {/* Text + Map */}
+    <div className="md:w-1/2 w-full">
+      <h3 className="font-serif text-2xl mb-2">Reception</h3>
+      <p className="font-great-vibes text-3xl mb-2">The Malcolm Hotel, Canmore</p>
+      <p className="text-sm opacity-80 mb-4">51.0893° N, 115.3522° W — Canmore, AB</p>
+      <div className="rounded-2xl overflow-hidden w-full h-[260px]">
+        <iframe
+          title="The Malcolm Hotel Map"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.0655738298505!2d-115.3521680841865!3d51.08929077956713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51d7e0c4eb7%3A0xe86991ce4b1d55fc!2sThe%20Malcolm%20Hotel%20by%20CLIQUE!5e0!3m2!1sen!2sca!4v1717677808000!5m2!1sen!2sca"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      </div>
     </div>
   </div>
 </section>
+    </FadeInSection>
 
+      <FadeInSection>
+      <section
+      id="contact"
+      className="w-full bg-[#918073] text-white py-16 px-6 font-great-vibes"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-5xl mb-8">-- Contacts --</h2>
+          <div className="space-y-4 text-2xl">
+            <p>
+              <span className="font-semibold">Kristen</span> — (403) 613-6976
+            </p>
+            <p>
+              <span className="font-semibold">Email:</span> Laurinedee@gmail.com
+            </p>
+            <p>
+              <span className="font-semibold">John De Leon</span> — (587) 389-6579
 
+            </p>
+            <p>
+              
+            </p>
 
+          </div>
 
-        </FadeInSection>
+        </div>
 
-        <FadeInSection>
-
-          {/* Dress Code Section */}
-<section id="dresscode" className="mt-32 w-full text-center font-great-vibes">
-  <div className="mb-0 mt-10">
-    <h2 className="text-5xl text-white">-- Dress code --</h2>
-  </div>
-  <div className="flex flex-col sm:flex-row justify-center items-end gap-4 mt-[-20px]">
-    <div className="w-[420px] h-[840px]">
-      <Image
-        className="object-contain w-full h-full"
-        src="/dress.png"
-        alt="Dress Code - Women"
-        width={420}
-        height={840}
-      />
-    </div>
-    <div className="w-[300px] h-[600px] relative bottom-24">
-      <Image
-        className="object-contain w-full h-full"
-        src="/suit.png"
-        alt="Dress Code - Men"
-        width={300}
-        height={600}
-      />
-    </div>
-  </div>
-</section>
-
-        </FadeInSection>
-        
-           
-
-        <FadeInSection>
-          {/* Schedule Section */}
-<section id="schedule" className="mt-10 w-full text-center text-white font-great-vibes">
-  <h2 className="text-6xl mb-8">-- Schedule --</h2>
-  <div className="max-w-3xl mx-auto text-left text-3xl leading-loose">
-    <p>
-      <strong className="text-amber-500">2:00 PM – Ceremony</strong><br />
-      Shrine Church of Our Lady of the Rockies<br />
-      <em>Join us as we say "I do" in a sacred and joyful celebration of our love.</em>
-    </p>
-    <br />
-    <p>
-      <strong className="text-amber-500">5:00 PM – Cocktail Hour</strong><br />
-      The Malcolm Hotel, Canmore<br />
-      <em>Enjoy light bites, drinks, and good company while we sneak away for some photos!</em>
-    </p>
-    <br />
-    <p>
-      <strong className="text-amber-500">6:00 PM – Reception</strong><br />
-      The Malcolm Hotel, Canmore<br />
-      <em>Let the celebration begin! Dinner, speeches, dancing, and unforgettable memories to follow.</em>
-    </p>
-  </div>
-</section>
-
-        </FadeInSection>
-
-        <FadeInSection>
-          {/* Contacts Section */}
-<section id="contact" className="mt-20 w-full">
-  <div className="bg-[#935774] rounded-t-[40px] px-10 md:px-200 py-12 w-full text-center font-great-vibes text-white">
-    <h2 className="text-5xl text-white mb-6">-- Contacts --</h2>
-    <p className="text-amber-300 text-2xl">Kristen (403) 613 6976</p>
-    <p className="text-amber-300 text-2xl mb-4">Laurinedee@gmail.com</p>
-    <p className="text-amber-300 text-2xl">John De Leon</p>
-    <p className="text-amber-300 text-2xl">(587) 389-6579</p>
-    <p className="text-amber-300 text-2xl">johndeleon233@gmail.com</p>
-  </div>
-</section>
-
-
-
-        </FadeInSection>
-
-         
-       </main>
-
-
+      </section>
+      </FadeInSection>
     </main>
-
-    
-      
-
-        
   );
 }
