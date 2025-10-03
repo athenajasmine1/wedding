@@ -1,11 +1,61 @@
 "use client";
 
-import FadeInSection from "@/components/FadeInSection";
+import FadeInSection from "../components/FadeInSection";
+import { useState } from "react";
 import Image from "next/image";
+import { supabase } from "../lib/supabase";
 
 export default function Home() {
+  
+  const [submitting, setSubmitting] = useState(false); // ⬅️ add this
+
+  // RSVP form handler
+  async function handleRsvpSubmit(e) {
+  e.preventDefault();
+  setSubmitting(true);
+
+  try {
+    const fd = new FormData(e.currentTarget);
+
+    const payload = {
+      firstName:  String(fd.get("firstName") || ""),
+      lastName:   String(fd.get("lastName") || ""),
+      email:      String(fd.get("email") || ""),
+      phone:      String(fd.get("phone") || ""),
+      attending:  String(fd.get("attending") || "yes") === "yes",
+      guests:     Number(fd.get("guests") || 1),
+      diet:       String(fd.get("diet") || ""),
+      message:    String(fd.get("message") || ""),
+    };
+
+    const res = await fetch("/api/rsvp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+    if (!res.ok || json.error) {
+      alert(`RSVP failed: ${json.error || res.statusText}`);
+      return;
+    }
+
+    // success → go to thank-you page
+    const first = encodeURIComponent(payload.firstName);
+    const last  = encodeURIComponent(payload.lastName);
+    window.location.href = `/thank-you?firstName=${first}&lastName=${last}`;
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Sorry, something went wrong.");
+  } finally {
+    setSubmitting(false);
+  }
+}
+
+  
   return (
     <main className="bg-[#e9ded3] font-sans">
+      
       <FadeInSection>
         <section
         id="home"
@@ -38,8 +88,9 @@ export default function Home() {
               <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#3e3a37]">
                 <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
                 <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
-                <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
                 <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
+                <li><a href="#timeline" className="inline-block py-3 hover:opacity-70">Timeline</a></li>
+                <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
                 <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
               </ul>
             </div>
@@ -68,17 +119,18 @@ export default function Home() {
             This is our love story
           </h2>
           <p className="leading-relaxed text-black mb-4">
-            They say love knows no boundaries—and in our case, no screen time
-            limits either.
+            If you ask John, he’ll say he saw Kristen first. But technically, Kristen spotted him before he ever knew it. Months before they officially met, a friend had wanted to introduce Kristen to another John De Leon. Out of curiosity, she searched him up on social media — only to stumble upon a different profile: John Gabriel De Leon, the man who would one day become her husband.
           </p>
           <p className="leading-relaxed text-black mb-4">
-            We met through Singles for Christ and our first few chats turned
-            into hours of conversation. Then into a date that lasted far too
-            long—in the best way.
+           Months later, their paths finally crossed when both were invited by a mutual friend to SFC’s Christian Life Program. During a fellowship after one of the events, John chose a seat across from Kristen, and even though the table was full, their attention never drifted far from each other. They quickly realized how much they had in common — both being the eldest in their families, volunteering at the same place, and sharing a strong desire to grow deeper in their faith.
+
           </p>
           <p className="leading-relaxed text-black">
-            Since then we’ve been inseparable—sharing laughs, adventures, and
-            endless playlists. From digital spark to real life forever.
+            Not long after, John invited Kristen out for coffee — though in truth, he wanted more time together, so their first official date ended up being at Kinjo.
+
+          The date went well, to say the least. What started as one meal has turned into countless more, and soon, a lifetime of them together.
+
+
           </p>
         </div>
         {/* Image */}
@@ -93,6 +145,38 @@ export default function Home() {
         </div>
       </section>      
       </FadeInSection>
+
+      {/* Love Story — Row 2 (alternate layout) */}
+<FadeInSection>
+  <section className="max-w-6xl mx-auto px-6 py-16">
+    <div className="flex flex-col md:flex-row-reverse items-center gap-10">
+      {/* Text (right on desktop) */}
+      <div className="md:w-1/2 text-[#2b2a28] leading-relaxed">
+        <h3 className="text-4xl font-great-vibes mb-6">Our Engagement</h3>
+        <p className="mb-4">
+          We got engaged on the Platform, with the city skyline behind us and the sun setting. I’d told Kristen we were just stopping to take a quick photo, but waiting nearby were the people who built us: both of our parents and our siblings. 
+        </p>
+        <p className="mb-4">
+          When she turned back to me, I took her hands, told her how every little ordinary day with her has felt like the best one, and asked if we could make a lifetime of them. She said “yes” (twice), and our families rushed in for hugs. The memory is everything we hoped for, with both of our families there to bless the beginning of the rest of our life together.
+
+        </p>
+      </div>
+
+      {/* Photo (left on desktop) */}
+      <div className="md:w-1/2 rounded-2xl overflow-hidden">
+        <Image
+          src="/about2.jpeg"            // change to your second photo if you have one, e.g. /about3.jpeg
+          alt="John & Kristen — another moment"
+          width={800}
+          height={530}
+          className="object-cover w-full h-auto"
+          priority={false}
+        />
+      </div>
+    </div>
+  </section>
+</FadeInSection>
+
 
       <FadeInSection>
 
@@ -140,16 +224,7 @@ export default function Home() {
       <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // Simple success UX; swap with your redirect if you prefer
-            const data = new FormData(e.currentTarget);
-            const first = data.get("firstName");
-            const last = data.get("lastName");
-            window.location.href = `/thank-you?firstName=${encodeURIComponent(
-              String(first || "")
-            )}&lastName=${encodeURIComponent(String(last || ""))}`;
-          }}
+          onSubmit={handleRsvpSubmit}
         >
           {/* First / Last */}
           <div className="flex flex-col">
@@ -268,25 +343,22 @@ export default function Home() {
           {/* Message */}
           <div className="flex flex-col md:col-span-2">
             <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">
-              Anything else?
+              Anything else? Who is coming?
             </label>
             <textarea
               id="message"
               name="message"
               rows={4}
               className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="Song requests, notes for the couple…"
+              placeholder="Extra guests name, etc.."
             />
           </div>
 
           {/* Submit */}
           <div className="md:col-span-2 flex justify-center pt-2">
-            <button
-              type="submit"
-              className="px-8 py-3 rounded-full bg-[#c8b6a6] text-white tracking-wide hover:bg-[#b9a797] transition"
-            >
-              Submit RSVP
-            </button>
+            <button type="submit" disabled={submitting}>
+              {submitting ? "Submitting…" : "Submit RSVP"}
+           </button>
           </div>
         </form>
       </div>
@@ -299,9 +371,12 @@ export default function Home() {
   </section>      
       </FadeInSection>
 
+    
+
     <FadeInSection>
       {/* WEDDING TIMELINE */}
-<section id="wedding" className="w-full bg-[#e6d8c7] text-[#2b2a28] py-16 md:py-24">
+<section id="timeline" className="w-full bg-[#e6d8c7] text-[#2b2a28] py-16 md:py-24">
+
   {/* Constrain everything to a centered column */}
   <div className="mx-auto max-w-4xl px-6">
     {/* Title */}
@@ -360,7 +435,7 @@ export default function Home() {
     <FadeInSection>
       {/* DETAILS */}
 
-      <section id="details" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
+      <section id="wedding" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
   <h2 className="text-center text-4xl font-great-vibes mb-2">The details</h2>
   <p className="text-center text-sm tracking-widest mb-8">
     Ceremony & Reception locations with photos and maps
@@ -387,7 +462,7 @@ export default function Home() {
       <div className="rounded-2xl overflow-hidden w-full h-[260px]">
         <iframe
           title="Our Lady of the Rockies Catholic Church Map"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.065513197622!2d-115.34850228418657!3d51.08929187956756!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51c25415555%3A0xf01665e84e731c2f!2sOur%20Lady%20of%20the%20Rockies%20Catholic%20Church!5e0!3m2!1sen!2sca!4v1717677708000!5m2!1sen!2sca"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2505.769319748087!2d-115.3454843!3d51.094264599999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c5ebb3873ec1%3A0x2823d0f2f20cf33!2sThe%20Shrine%20Church%20of%20Our%20Lady%20of%20the%20Rockies!5e0!3m2!1sen!2sca!4v1759017803233!5m2!1sen!2sca"
           width="100%"
           height="100%"
           style={{ border: 0 }}
@@ -419,7 +494,7 @@ export default function Home() {
       <div className="rounded-2xl overflow-hidden w-full h-[260px]">
         <iframe
           title="The Malcolm Hotel Map"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.0655738298505!2d-115.3521680841865!3d51.08929077956713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c51d7e0c4eb7%3A0xe86991ce4b1d55fc!2sThe%20Malcolm%20Hotel%20by%20CLIQUE!5e0!3m2!1sen!2sca!4v1717677808000!5m2!1sen!2sca"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2506.1741711589752!2d-115.3527281!3d51.086793099999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5370c5bfeb7f6009%3A0xa1e3d6e2667e256d!2sThe%20Malcolm%20Hotel!5e0!3m2!1sen!2sca!4v1759017948131!5m2!1sen!2sca"
           width="100%"
           height="100%"
           style={{ border: 0 }}
@@ -433,6 +508,85 @@ export default function Home() {
 </section>
     </FadeInSection>
 
+    {/* w*/}
+      <FadeInSection>
+        <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12">
+        {/* Text */}
+        <div className="md:w-1/2">
+          <h2 className="text-4xl font-great-vibes mb-6">
+           Malcom Hotel
+
+
+          </h2>
+          <p className="leading-relaxed text-black mb-4">
+            Discount code:2604DELE.
+Hotel Number: 403.812.0680
+Website Link:malcolmhotel.ca
+
+          </p>
+          <p className="leading-relaxed text-black mb-4">
+           Note from Hotel: 
+
+
+          </p>
+          <p className="leading-relaxed text-black">
+            The Malcolm Hotel will provide a booking code for your guests to apply a twenty
+percent (20%) discount off the best flexible rate. Please note a two-night minimum may apply
+during certain dates.
+
+
+
+          </p>
+        </div>
+        {/* Image */}
+        <div className="md:w-1/2 rounded-2xl overflow-hidden">
+          <Image
+            src="/wed2.jpg"
+            alt="photo"
+            width={600}
+            height={400}
+            className="object-cover"
+          />
+        </div>
+      </section>      
+      </FadeInSection>
+
+      <FadeInSection>
+      <div className="mt-20 text-center space-y-10">
+        {/* Attire */}
+        <div>
+          <h3 className="text-xl uppercase tracking-widest mb-4">Attire</h3>
+          <p className="text-sm opacity-80">Formal</p>
+          <p className="mt-2">Gentlemen: Barong with black slacks</p>
+          <p>Ladies: Long gowns and dresses</p>
+      </div>
+      {/* Palette */}
+      <div>
+        <h3 className="text-xl uppercase tracking-widest mb-4">Palette</h3>
+        <div className="flex justify-center gap-4">
+          <Image src="/color1.png" alt="Color 1" width={50} height={50} className="rounded-full" />
+          <Image src="/color2.png" alt="Color 2" width={50} height={50} className="rounded-full" />
+          <Image src="/color3.png" alt="Color 3" width={50} height={50} className="rounded-full" />
+          <Image src="/color4.png" alt="Color 4" width={50} height={50} className="rounded-full" />
+          <Image src="/color5.png" alt="Color 5" width={50} height={50} className="rounded-full" />
+          <Image src="/color6.png" alt="Color 6" width={50} height={50} className="rounded-full" />
+      </div>
+    </div>
+
+    {/* Gifts */}
+  <div className="pb-16">   {/* ⬅ added padding-bottom */}
+  <h3 className="text-xl uppercase tracking-widest mb-4">Gifts</h3>
+  <p className="text-sm max-w-xl mx-auto opacity-80">
+    Your presence at our wedding is the greatest gift of all. If you wish to honor us with a gift, 
+    a contribution towards our future together would be greatly appreciated.
+  </p>
+</div>
+</div>
+    </FadeInSection>
+
+      
+    
+
       <FadeInSection>
       <section
       id="contact"
@@ -445,10 +599,11 @@ export default function Home() {
               <span className="font-semibold">Kristen</span> — (403) 613-6976
             </p>
             <p>
-              <span className="font-semibold">Email:</span> Laurinedee@gmail.com
+              <span className="font-semibold">Email:</span>johnandkristen.deleon@gmail.com
             </p>
             <p>
-              <span className="font-semibold">John De Leon</span> — (587) 389-6579
+              <span className="font-semibold">John De Leon</span> —  587 899 6309
+
 
             </p>
             <p>
