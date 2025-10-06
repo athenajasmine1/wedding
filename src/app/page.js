@@ -5,9 +5,13 @@ import { useState, useMemo, useEffect } from 'react';
 import Image from "next/image";
 import { supabase } from "../lib/supabase";
 import { useRouter } from 'next/navigation';
+import Countdown from "../components/Countdown";
 
 
 export default function Home() {
+
+  
+
 
 const [groupId, setGroupId] = useState("");
 const [family, setFamily] = useState([]);              // [{first_name,last_name}]
@@ -235,7 +239,7 @@ async function handleSubmitAll(e) {
 
   
   return (
-    <main className="bg-[#e9ded3] font-sans">
+    <main className="bg-[#c3c7b3] font-sans">
       
       <FadeInSection>
         <section
@@ -244,7 +248,7 @@ async function handleSubmitAll(e) {
       >
 
       <Image
-          src="/holding.png"
+          src="/about20.jpeg"
           alt="Couple"
           fill
           className="object-cover brightness-75"
@@ -254,17 +258,17 @@ async function handleSubmitAll(e) {
       {/* header OVER the image (no space) */}
         <header className="absolute inset-x-0 top-0 z-50">
           {/* Top name bar */}
-          <div className="w-full bg-[#f6efe9]/90 backdrop-blur">
+          <div className="w-full bg-[#c3c7b3]/90 backdrop-blur">
             <div className="max-w-6xl mx-auto px-6 py-4">
               <h1 className="text-center font-serif text-2xl md:text-3xl tracking-[0.35em] uppercase text-[#3e3a37]">
-                JOHN & KRISTIN
+                JOHN & KRISTEN
               </h1>
             </div>
-            <div className="border-b border-[#d9cfc7]" />
+            <div className="border-b border-[#d1b8cf]" />
           </div>
 
         {/* Slim nav strip */}
-          <nav className="w-full bg-[#e9ded3]/90 backdrop-blur">
+          <nav className="w-full bg-[#d1b8c]/90 backdrop-blur">
             <div className="max-w-6xl mx-auto px-6">
               <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#3e3a37]">
                 <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
@@ -290,6 +294,8 @@ async function handleSubmitAll(e) {
       </section>
       
       </FadeInSection>
+
+      <Countdown />
 
       {/* Love Story */}
       <FadeInSection>
@@ -329,43 +335,84 @@ async function handleSubmitAll(e) {
 
       {/* Love Story — Row 2 (alternate layout) */}
 <FadeInSection>
-  <section className="max-w-6xl mx-auto px-6 py-16">
-    <div className="flex flex-col md:flex-row-reverse items-center gap-10">
-      {/* Text (right on desktop) */}
-      <div className="md:w-1/2 text-[#2b2a28] leading-relaxed">
-        <h3 className="text-4xl font-great-vibes mb-6">Our Engagement</h3>
-        <p className="mb-4">
-          We got engaged on the Platform, with the city skyline behind us and the sun setting. I’d told Kristen we were just stopping to take a quick photo, but waiting nearby were the people who built us: both of our parents and our siblings. 
-        </p>
-        <p className="mb-4">
-          When she turned back to me, I took her hands, told her how every little ordinary day with her has felt like the best one, and asked if we could make a lifetime of them. She said “yes” (twice), and our families rushed in for hugs. The memory is everything we hoped for, with both of our families there to bless the beginning of the rest of our life together.
+  <section id="engagement" className="bg-[#f6f2ee] py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid gap-10 md:gap-14 md:grid-cols-5 items-start">
+          
+          {/* Left column: copy + small image */}
+          <div className="md:col-span-3">
+            <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">
+              Our Engagement
+            </p>
+            <h2 className="mt-2 text-3xl md:text-4xl font-serif text-[#3e3a37]">
+              Love at first sunset
+            </h2>
 
-        </p>
-      </div>
+            <p className="mt-4 text-[15px] leading-7 text-[#4a4643]">
+              We got engaged on the Platform, with the city skyline behind us and the sun setting.
+              I’d told Kristen we were just stopping to take a quick photo, but waiting nearby were
+              the people who built us: both of our parents and our siblings. When she turned back to me,
+              I took her hands, told her how every little ordinary day with her has felt like the best one,
+              and asked if we could make a lifetime of them. She said “yes” (twice), and our families rushed
+              in for hugs. The memory is everything we hoped for, with both of our families there to bless
+              the beginning of the rest of our life together.
+            </p>
 
-      {/* Photo (left on desktop) */}
-      <div className="md:w-1/2 rounded-2xl overflow-hidden">
-        <Image
-          src="/about2.jpeg"            // change to your second photo if you have one, e.g. /about3.jpeg
-          alt="John & Kristen — another moment"
-          width={800}
-          height={530}
-          className="object-cover w-full h-auto"
-          priority={false}
-        />
+            {/* supporting image */}
+            <div className="mt-6">
+              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden ring-1 ring-black/5 bg-white">
+                <Image
+                  src="/about3.jpeg"
+                  alt="Rings / details"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right column: hero photo with decorative stamp */}
+          <div className="md:col-span-2 relative">
+            <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-black/5 bg-white shadow-lg">
+              <Image
+                src="/about4.jpg"
+                alt="Our engagement"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 40vw"
+                priority
+              />
+            </div>
+
+            {/* faint circular “stamp” */}
+            <svg
+              viewBox="0 0 200 200"
+              className="hidden md:block absolute -bottom-10 -left-8 w-40 h-40 text-[#b9aaa0]/50"
+            >
+              <defs>
+                <path id="circlePath" d="M100,100 m-75,0 a75,75 0 1,1 150,0 a75,75 0 1,1 -150,0" />
+              </defs>
+              <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeDasharray="2 6" strokeWidth="2" />
+              <text fill="currentColor" fontSize="10" letterSpacing="3">
+                <textPath href="#circlePath">JOHN & KRISTEN • 04 · 25 · 2026 • CANMORE •</textPath>
+              </text>
+            </svg>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 </FadeInSection>
 
 
       <FadeInSection>
 
-       <section id="rsvp" className="bg-[#efe7df] text-[#3e3a37]">
+       <section id="rsvp" className="bg-[#d1b8c] text-[#3e3a37]">
       {/* Photo header */}
       <div className="relative w-full h-[40vh] min-h-[320px]">
         <Image
-          src="/about2.jpeg"
+          src="/about3.jpeg"
           alt="John & Kristine"
           fill
           className="object-cover"
@@ -567,7 +614,7 @@ async function handleSubmitAll(e) {
 
     <FadeInSection>
       {/* WEDDING TIMELINE */}
-<section id="timeline" className="w-full bg-[#e6d8c7] text-[#2b2a28] py-16 md:py-24">
+<section id="timeline" className="w-full bg-[#e9deca] text-[#2b2a28] py-16 md:py-24">
 
   {/* Constrain everything to a centered column */}
   <div className="mx-auto max-w-4xl px-6">
@@ -700,113 +747,230 @@ async function handleSubmitAll(e) {
 </section>
     </FadeInSection>
 
-    {/* w*/}
-      <FadeInSection>
-        <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12">
-        {/* Text */}
-        <div className="md:w-1/2">
-          <h2 className="text-4xl font-great-vibes mb-6">
-           Malcom Hotel
+    <FadeInSection>
+      <section id="accommodations" className="bg-[#f4f5ee] py-16 md:py-24">
+      <div className="max-w-2xl mx-auto px-6">
+        <div className="relative bg-[#d1b8c]/95 rounded-2xl shadow-xl ring-1 ring-black/5 px-6 py-10 md:px-10 md:py-12 text-center">
 
+          {/* heading */}
+          <h className="font-great-vibes text-5xl md:text-6xl text-[#3e3a37] leading-none">Hotels</h>
 
-          </h2>
-          <p className="leading-relaxed text-black mb-4">
-            Discount code:2604DELE.
-Hotel Number: 403.812.0680
-Website Link:malcolmhotel.ca
+          {/* subtle divider */}
+          <div className="mx-auto my-6 h-px w-24 bg-[#e8dee8]" />
 
+          {/* • ACCOMMODATIONS • */}
+          <p className="tracking-[0.25em] text-[11px] md:text-xs text-[#6b5a4e] uppercase mb-6">
+            • Accommodations •
           </p>
-          <p className="leading-relaxed text-black mb-4">
-           Note from Hotel: 
 
+          {/* Coast Hotel */}
+          <div className="space-y-1.5 text-[#3e3a37]">
+            <p className="font-semibold">Coast Hotel</p>
+            <p className="text-sm"><span className="font-medium">Discount code:</span> WED</p>
+            <p className="text-sm">
+              <span className="font-medium">Hotel number:</span>{' '}
+              <a href="tel:18007166199" className="underline decoration-dotted hover:opacity-80">
+                1.800.716.6199
+              </a>
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Website:</span>{' '}
+              <a href="http://coa.st/610t" className="underline decoration-dotted hover:opacity-80" target="_blank" rel="noreferrer">
+                coa.st/610t
+              </a>
+            </p>
+            <p className="text-xs text-[#6b5a4e] mt-2">
+              Reservations are subject to availability and rates may fluctuate. A valid credit card is required; the first night’s room &amp; tax is prepaid and non-refundable at booking.
+            </p>
+          </div>
 
-          </p>
-          <p className="leading-relaxed text-black">
-            The Malcolm Hotel will provide a booking code for your guests to apply a twenty
-percent (20%) discount off the best flexible rate. Please note a two-night minimum may apply
-during certain dates.
+          {/* subtle dot */}
+          <div className="my-8 text-[#c3b6ab]">• • •</div>
 
+          {/* Malcolm Hotel */}
+          <div className="space-y-1.5 text-[#3e3a37]">
+            <p className="font-semibold">Malcolm Hotel</p>
+            <p className="text-sm"><span className="font-medium">Discount code:</span> 2604DELE</p>
+            <p className="text-sm">
+              <span className="font-medium">Hotel number:</span>{' '}
+              <a href="tel:4038120680" className="underline decoration-dotted hover:opacity-80">
+                403.812.0680
+              </a>
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Website:</span>{' '}
+              <a href="https://malcolmhotel.ca" className="underline decoration-dotted hover:opacity-80" target="_blank" rel="noreferrer">
+                malcolmhotel.ca
+              </a>
+            </p>
+            <p className="text-xs text-[#6b5a4e] mt-2">
+              Booking code provides <span className="font-medium">20% off</span> the best flexible rate.
+              A two-night minimum may apply on certain dates.
+            </p>
+          </div>
 
+          {/* subtle dot */}
+          <div className="my-8 text-[#c3b6ab]">• • •</div>
 
-          </p>
+          {/* Everwild Canmore */}
+          <div className="space-y-1.5 text-[#3e3a37]">
+            <p className="font-semibold">Everwild Canmore</p>
+            <p className="text-sm">
+              <span className="font-medium">Promo code:</span> HAPPYEVERAFTER (25% off online reservations)
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Reservations:</span>{' '}
+              <a href="https://stayeverwild.com/canmore/" className="underline decoration-dotted hover:opacity-80" target="_blank" rel="noreferrer">
+                stayeverwild.com/canmore
+              </a>
+            </p>
+          </div>
+
+          {/* bottom spacing */}
+          <div className="mt-8" />
+
+          {/* optional fine print / link to more */}
+          {/* <p className="text-xs text-[#6b5a4e]">
+            For more details and updates, visit <a href="https://johnandkristen.ca" className="underline decoration-dotted">johnandkristen.ca</a>
+          </p> */}
         </div>
-        {/* Image */}
-        <div className="md:w-1/2 rounded-2xl overflow-hidden">
-          <Image
-            src="/wed2.jpg"
-            alt="photo"
-            width={600}
-            height={400}
-            className="object-cover"
-          />
-        </div>
-      </section>      
-      </FadeInSection>
+      </div>
+    </section>
+    </FadeInSection>
 
       <FadeInSection>
-      <div className="mt-20 text-center space-y-10">
-        {/* Attire */}
-        <div>
-          <h3 className="text-xl uppercase tracking-widest mb-4">Attire</h3>
-          <p className="text-sm opacity-80">Formal</p>
-          <p className="mt-2">Gentlemen: Barong with black slacks</p>
-          <p>Ladies: Long gowns and dresses</p>
-      </div>
-      {/* Palette */}
-      <div>
-        <h3 className="text-xl uppercase tracking-widest mb-4">Palette</h3>
-        <div className="flex justify-center gap-4">
-          <Image src="/color1.png" alt="Color 1" width={50} height={50} className="rounded-full" />
-          <Image src="/color2.png" alt="Color 2" width={50} height={50} className="rounded-full" />
-          <Image src="/color3.png" alt="Color 3" width={50} height={50} className="rounded-full" />
-          <Image src="/color4.png" alt="Color 4" width={50} height={50} className="rounded-full" />
-          <Image src="/color5.png" alt="Color 5" width={50} height={50} className="rounded-full" />
-          <Image src="/color6.png" alt="Color 6" width={50} height={50} className="rounded-full" />
-      </div>
-    </div>
+      <section id="attire" className="bg-[#e8e4d5] py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-6">
 
-    {/* Gifts */}
-  <div className="pb-16">   {/* ⬅ added padding-bottom */}
-  <h3 className="text-xl uppercase tracking-widest mb-4">Gifts</h3>
-  <p className="text-sm max-w-xl mx-auto opacity-80">
-    Your presence at our wedding is the greatest gift of all. If you wish to honor us with a gift, 
-    a contribution towards our future together would be greatly appreciated.
-  </p>
-</div>
-</div>
+        {/* Heading */}
+        <div className="text-center">
+          <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">Formal</p>
+          <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">Attire</h2>
+        </div>
+
+        {/* Layout: Gentlemen (left) • Lineup (center) • Ladies (right) */}
+        <div className="mt-10 grid gap-8 md:gap-12 md:grid-cols-3 items-center text-[#3e3a37]">
+          {/* Gentlemen */}
+          <div className="text-center md:text-right">
+            <h3 className="text-lg font-semibold tracking-wide">Gentlemen</h3>
+            <p className="mt-1 text-sm text-[#6b5a4e]">Barong with black slacks</p>
+          </div>
+
+          {/* Lineup image */}
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-2xl aspect-[26/13]">
+              <Image
+                src="/attire_transparent.png"     // <— your transparent lineup image
+                alt="Guest attire lineup"
+                fill
+                className="object-contain drop-shadow-md"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Ladies */}
+          <div className="text-center md:text-left">
+            <h3 className="text-lg font-semibold tracking-wide">Ladies</h3>
+            <p className="mt-1 text-sm text-[#6b5a4e]">Long gowns and dresses</p>
+          </div>
+        </div>
+
+        {/* Palette */}
+        <div className="mt-10 text-center">
+          <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">Palette</p>
+
+          <div className="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-4 place-items-center">
+            {[
+              { src: '/color01.png', label: 'Sage Green' },
+              { src: '/color02.png', label: 'Soft Yellow' },
+              { src: '/color03.png', label: 'Lavender' },
+              { src: '/color04.png', label: 'Neutral Beige' },
+              { src: '/color05.png', label: 'Warm Brown' },
+              { src: '/color06.png', label: 'Chocolate Brown' },
+            ].map((c) => (
+              <div key={c.label} className="text-center">
+                <div className="relative h-12 w-12 overflow-hidden rounded-full ring-1 ring-black/10">
+                  <Image src={c.src} alt={c.label} fill className="object-cover" />
+                </div>
+                <span className="mt-2 block text-xs text-[#3e3a37]">{c.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </section>
     </FadeInSection>
 
       
     
 
       <FadeInSection>
-      <section
-      id="contact"
-      className="w-full bg-[#918073] text-white py-16 px-6 font-great-vibes"
-      >
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl mb-8">-- Contacts --</h2>
-          <div className="space-y-4 text-2xl">
-            <p>
-              <span className="font-semibold">Kristen</span> — (403) 613-6976
+      <section id="contact" className="bg-[#c3cdbe] py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid gap-10 md:gap-14 md:grid-cols-3 items-center text-[#3e3a37]">
+          {/* Left: John */}
+          <div className="text-center md:text-right space-y-2">
+            <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">
+              Contact
             </p>
-            <p>
-              <span className="font-semibold">Email:</span>johnandkristen.deleon@gmail.com
+            <h3 className="text-2xl font-serif">John</h3>
+            <p className="text-sm">
+              <span className="font-medium">Number: </span>
+              <a href="tel:15878996309" className="underline decoration-dotted hover:opacity-80">
+                587&nbsp;899&nbsp;6309
+              </a>
             </p>
-            <p>
-              <span className="font-semibold">John De Leon</span> —  587 899 6309
-
-
+            <p className="text-sm">
+              <span className="font-medium">Email: </span>
+              <a
+                href="mailto:johnandkristen.deleon@gmail.com"
+                className="underline decoration-dotted hover:opacity-80 break-all"
+              >
+                johnandkristen.deleon@gmail.com
+              </a>
             </p>
-            <p>
-              
-            </p>
-
           </div>
 
-        </div>
+          {/* Center: circular image */}
+          <div className="flex justify-center">
+            <div className="relative w-48 h-48 md:w-64 md:h-64">
+              <Image
+                src="/contact-circle.jpg" // <-- put your image at /public/contact-circle.jpg
+                alt="John & Kristen"
+                fill
+                className="rounded-full object-cover ring-4 ring-[#d8cfc6] shadow-xl"
+                priority
+              />
+            </div>
+          </div>
 
-      </section>
+          {/* Right: Kristen */}
+          <div className="text-center md:text-left space-y-2">
+            <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-transparent select-none">
+              Contact
+            </p>
+            <h3 className="text-2xl font-serif">Kristen</h3>
+            <p className="text-sm">
+              <span className="font-medium">Number: </span>
+              <a href="tel:14036136976" className="underline decoration-dotted hover:opacity-80">
+                403&nbsp;613&nbsp;6976
+              </a>
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Email: </span>
+              <a
+                href="mailto:johnandkristen.deleon@gmail.com"
+                className="underline decoration-dotted hover:opacity-80 break-all"
+              >
+                johnandkristen.deleon@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
       </FadeInSection>
     </main>
   );
