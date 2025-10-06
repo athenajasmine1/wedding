@@ -1,13 +1,194 @@
 "use client";
 
 import FadeInSection from "../components/FadeInSection";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from 'react';
 import Image from "next/image";
 import { supabase } from "../lib/supabase";
+import { useRouter } from 'next/navigation';
+
 
 export default function Home() {
+
+const [groupId, setGroupId] = useState("");
+const [family, setFamily] = useState([]);              // [{first_name,last_name}]
+const [selected, setSelected] = useState({});          // {"First Last": true|false}
+const [showFamily, setShowFamily] = useState(false);
+
+// count how many checked (used to keep your form guests count via hidden input)
+const selectedCount = useMemo(
+  () => Object.values(selected).filter(Boolean).length,
+  [selected]
+);
+
+// Read current First/Last from the form and trigger lookup once both have values
+function syncGroupFromForm(form) {
+  const first = form?.firstName?.value?.trim() || "";
+  const last  = form?.lastName?.value?.trim()  || "";
+  if (first && last) handleNameChange(first, last);
+}
+
+// 1) Find guest -> get their group_ID
+// 2) Load ONLY members with SAME group_ID
+// 3) Pre-check members already RSVP'd attending=true
+async function handleNameChange(first, last) {
+  const { data: me, error: e1 } = await supabase
+    .from("guests")
+    .select('first_name,last_name,group_ID') 
+    .ilike("first_name", first)   // case-insensitive match
+    .ilike("last_name", last)
+    .maybeSingle();
+
+  if (e1 || !me?.group_ID) { setShowFamily(false); return; }
+
+const gid = me.group_ID;                       // <-- group_ID
+  setGroupId(gid);
+
+  const { data: fam, error: e2 } = await supabase
+    .from("guests")
+    .select("first_name,last_name")
+    .eq('group_ID', gid)
+    .order("last_name", { ascending: true })
+    .order("first_name", { ascending: true });
+
+  if (e2) { setShowFamily(false); return; }
+
+  const { data: rs } = await supabase
+    .from("rsvps")
+    .select("first_name,last_name,attending")
+    .eq('group_ID', gid);
+
+  const attendingSet = new Set(
+    (rs || [])
+      .filter(r => r.attending === true)
+      .map(r => `${r.first_name} ${r.last_name}`.toLowerCase())
+  );
+
+  // pre-check self + already-attending family
+  const initial = Object.fromEntries(
+    (fam || []).map(p => {
+      const full = `${p.first_name} ${p.last_name}`;
+      const isSelf =
+        p.first_name.toLowerCase() === first.toLowerCase() &&
+        p.last_name.toLowerCase() === last.toLowerCase();
+      return [full, isSelf || attendingSet.has(full.toLowerCase())];
+    })
+  );
+
+  setFamily(fam || []);
+  setSelected(initial);
+  setShowFamily(true);
+}
+
+function toggleMember(fullName) {
+  setSelected(prev => ({ ...prev, [fullName]: !prev[fullName] }));
+}
+
+// Save SAME-group selections into rsvps, then (optionally) trigger your email route
+async function handleSubmitFamilyRSVP() {
+  if (!groupId || !family.length) {
+    throw new Error('No family/group loaded yet. Type your first + last name, then click outside the field.');
+  }
+
+  const rows = family.map(p => {
+    const full = `${p.first_name} ${p.last_name}`;
+    const isAttending = !!selected[full];
+    return {
+      first_name: p.first_name,
+      last_name:  p.last_name,
+      group_ID:   groupId,            // ← SAME group enforced
+      attending:  !!selected[full],
+      guests:     isAttending ? 1 : 0, // optional: headcount
+    };
+  });
+
+  console.log('Upserting rows →', rows);
+
+  try {
+    const { data, error } = await supabase
+      .from('rsvps')
+      .upsert(rows, {
+        onConflict: 'first_name,last_name,group_ID', // MUST match a UNIQUE constraint
+        returning: 'minimal',
+      });
+
+    if (error) throw error;
+
+    // optional: fire your notify email fetch here
+    // await fetch('/api/rsvp/notify', { ... });
+
+    alert('Thanks! Your RSVP has been saved.');
+  } catch (err) {
+    console.error('RSVP upsert error:', err); // <- open devtools console to read
+    alert(`Failed to save family RSVP: ${err.message || err}`);
+  }
+
+  // upsert by first_name,last_name,group_ID
+  const { error } = await supabase.from('rsvps').upsert(rows, {
+    onConflict: 'first_name,last_name,group_ID', // <-- group_ID
+    returning: 'minimal',
+  });
+
+  if (error) {
+    console.error(error);
+    alert('Failed to save family RSVP');
+  }
+}
+
+
+
+
+async function handleSubmitAll(e) {
+  e.preventDefault();                 // stop native submit
+   if (!groupId || !family.length) {
+    alert('Please enter your first & last name, then pick your family.');
+    return;
+  }
+  setSubmitting(true);
+  try {
+    // 1) block if the group is already locked (see section 2)
+    const { data: lock } = await supabase
+      .from('group_locks')
+      .select('*')
+      .eq('group_ID', groupId)
+      .maybeSingle();
+    if (lock) {
+      // already submitted before — just route to thank you
+      router.replace('/thank-you');
+      return;
+    }
+
+    await handleSubmitFamilyRSVP();
+
+    await supabase.from('group_locks').insert({ group_ID: groupId }).select().single();
+
+    // 4) go to thank-you
+    router.replace('/thank-you');   // use replace so back button doesn’t resubmit
+  } catch (err) {
+    console.error('Submit error:', err);
+    alert(err?.message || 'Failed to save RSVP');
+  } finally {
+    setSubmitting(false);
+  }
+
+}
+
   
+
+  
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false); // ⬅️ add this
+
+  useEffect(() => {
+  const handleKey = (e) => {
+    if (e.shiftKey && e.key.toLowerCase() === "a") {
+  window.location.href = "/admin/login";
+}
+
+  };
+  window.addEventListener("keydown", handleKey);
+  return () => window.removeEventListener("keydown", handleKey);
+}, []);
+
 
   // RSVP form handler
   async function handleRsvpSubmit(e) {
@@ -76,7 +257,7 @@ export default function Home() {
           <div className="w-full bg-[#f6efe9]/90 backdrop-blur">
             <div className="max-w-6xl mx-auto px-6 py-4">
               <h1 className="text-center font-serif text-2xl md:text-3xl tracking-[0.35em] uppercase text-[#3e3a37]">
-                JOHN & KRISTINE
+                JOHN & KRISTIN
               </h1>
             </div>
             <div className="border-b border-[#d9cfc7]" />
@@ -180,195 +361,206 @@ export default function Home() {
 
       <FadeInSection>
 
-        <section id="rsvp" className="bg-[#efe7df] text-[#3e3a37]">
-    {/* Photo header */}
-    <div className="relative w-full h-[40vh] min-h-[320px]">
-      <Image
-        src="/about2.jpeg"           // <-- your image
-        alt="John & Kristen"
-        fill
-        className="object-cover"
-        priority
-      />
-      {/* subtle dark overlay for legibility */}
-      <div className="absolute inset-0 bg-black/30" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-        <h1 className="text-4xl md:text-6xl font-serif tracking-wide text-white">
-          JOHN & KRISTINE
-        </h1>
-        <p className="mt-3 text-xl md:text-2xl text-white/90 font-great-vibes italic">
-          are getting married
-        </p>
-        <p className="mt-2 text-sm md:text-base tracking-[0.35em] text-white/90">
-          APRIL 25, 2026 • CANMORE, ALBERTA
-        </p>
-      </div>
-    </div>
-
-    {/* Copy + Form */}
-    <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
-      {/* Headings */}
-      <div className="text-center mb-10 md:mb-14">
-        <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">
-          we invite you to
-        </p>
-        <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
-          Celebrate Our Wedding
-        </h2>
-        <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
-          Please confirm your presence through the RSVP form by <strong>07.15.2025</strong>.
-        </p>
+       <section id="rsvp" className="bg-[#efe7df] text-[#3e3a37]">
+      {/* Photo header */}
+      <div className="relative w-full h-[40vh] min-h-[320px]">
+        <Image
+          src="/about2.jpeg"
+          alt="John & Kristine"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-4xl md:text-6xl font-serif tracking-wide text-white">
+            JOHN & KRISTINE
+          </h1>
+          <p className="mt-3 text-xl md:text-2xl text-white/90 font-great-vibes italic">
+            are getting married
+          </p>
+          <p className="mt-2 text-sm md:text-base tracking-[0.35em] text-white/90">
+            APRIL 25, 2026 • CANMORE, ALBERTA
+          </p>
+        </div>
       </div>
 
-      {/* Card */}
-      <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
-        <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          onSubmit={handleRsvpSubmit}
-        >
-          {/* First / Last */}
-          <div className="flex flex-col">
-            <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
-              First name
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              required
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="e.g., Kristen"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
-              Last name
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              required
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="e.g., Mendoza"
-            />
-          </div>
+      {/* Copy + Form */}
+      <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
+        {/* Headings */}
+        <div className="text-center mb-10 md:mb-14">
+          <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">
+            we invite you to
+          </p>
+          <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
+            Celebrate Our Wedding
+          </h2>
+          <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
+            Please confirm your presence through the RSVP form by <strong>07.15.2025</strong>.
+          </p>
+        </div>
 
-          {/* Email / Phone */}
-          <div className="flex flex-col">
-            <label htmlFor="email" className="text-xs uppercase tracking-widest mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="phone" className="text-xs uppercase tracking-widest mb-2">
-              Phone (optional)
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="(xxx) xxx-xxxx"
-            />
-          </div>
+        {/* Card */}
+        <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
+<form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmitAll}>
 
-          {/* Attendance (radios) */}
-          <div className="flex flex-col md:col-span-2">
-            <span className="text-xs uppercase tracking-widest mb-2">
-              Will you attend?
-            </span>
-            <div className="flex items-center gap-6">
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="attending"
-                  value="yes"
-                  defaultChecked
-                  className="accent-[#c8b6a6]"
-                />
-                <span>Yes, can’t wait!</span>
+
+            {/* First / Last */}
+            <div className="flex flex-col">
+              <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
+                First name
               </label>
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="attending"
-                  value="no"
-                  className="accent-[#c8b6a6]"
-                />
-                <span>Sorry, can’t make it</span>
-              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                required
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="e.g., Kristen"
+                onBlur={(e) => syncGroupFromForm(e.currentTarget.form)}
+              />
             </div>
-          </div>
+            <div className="flex flex-col">
+              <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
+                Last name
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                required
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="e.g., Mendoza"
+                onBlur={(e) => syncGroupFromForm(e.currentTarget.form)}
+              />
+            </div>
 
-          {/* Guests / Dietary */}
-          <div className="flex flex-col">
-            <label htmlFor="guests" className="text-xs uppercase tracking-widest mb-2">
-              Number of guests (including you)
-            </label>
-            <select
-              id="guests"
-              name="guests"
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              defaultValue="1"
-            >
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="diet" className="text-xs uppercase tracking-widest mb-2">
-              Dietary restrictions (optional)
-            </label>
-            <input
-              id="diet"
-              name="diet"
-              type="text"
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="Allergies, vegetarian, etc."
-            />
-          </div>
+            {/* Email / Phone */}
+            <div className="flex flex-col">
+              <label htmlFor="email" className="text-xs uppercase tracking-widest mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="phone" className="text-xs uppercase tracking-widest mb-2">
+                Phone (optional)
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="(xxx) xxx-xxxx"
+              />
+            </div>
 
-          {/* Message */}
-          <div className="flex flex-col md:col-span-2">
-            <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">
-              Anything else? Who is coming?
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              rows={4}
-              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-              placeholder="Extra guests name, etc.."
-            />
-          </div>
+            {/* Attendance (radios) */}
+            <div className="flex flex-col md:col-span-2">
+              <span className="text-xs uppercase tracking-widest mb-2">Will you attend?</span>
+              <div className="flex items-center gap-6">
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" name="attending" value="yes" defaultChecked className="accent-[#c8b6a6]" />
+                  <span>Yes, can’t wait!</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" name="attending" value="no" className="accent-[#c8b6a6]" />
+                  <span>Sorry, can’t make it</span>
+                </label>
+              </div>
+            </div>
 
-          {/* Submit */}
-          <div className="md:col-span-2 flex justify-center pt-2">
-            <button type="submit" disabled={submitting}>
-              {submitting ? "Submitting…" : "Submit RSVP"}
-           </button>
-          </div>
-        </form>
+            {/* FAMILY (replaces number of guests) */}
+            {showFamily && family.length > 0 && (
+              <div className="md:col-span-2">
+                <div className="rounded-xl border border-[#d8cfc6] bg-white/90 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold tracking-wide text-[#3e3a37]">
+                      Select who from your family is attending
+                    </h3>
+                    <span className="text-xs text-[#6b5a4e]">Group: <b>{groupId}</b></span>
+                  </div>
+
+                  <div className="divide-y divide-[#eee4da]">
+                    {family.map((p, i) => {
+                      const full = `${p.first_name} ${p.last_name}`;
+                      return (
+                        <label
+                          key={`${full}-${i}`}
+                          className="flex items-center justify-between py-2 px-2 hover:bg-[#f7f2ee] rounded-lg"
+                        >
+                          <span className="capitalize">{full}</span>
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5 accent-[#c8b6a6]"
+                            checked={!!selected[full]}
+                            onChange={() => toggleMember(full)}
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* keep legacy consumers happy if they expect `guests` */}
+                  <input type="hidden" name="guests" value={selectedCount} />
+                  <p className="mt-3 text-[11px] text-[#6b5a4e]">
+                    (Check everyone who’s coming — including yourself.)
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Dietary */}
+            <div className="flex flex-col">
+              <label htmlFor="diet" className="text-xs uppercase tracking-widest mb-2">
+                Dietary restrictions (optional)
+              </label>
+              <input
+                id="diet"
+                name="diet"
+                type="text"
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="Allergies, vegetarian, etc."
+              />
+            </div>
+
+            {/* Message */}
+            <div className="flex flex-col md:col-span-2">
+              <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">
+                Anything else? Who is coming?
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+                placeholder="Extra guests name, etc.."
+              />
+            </div>
+
+            {/* Submit */}
+            <div className="md:col-span-2 flex justify-center pt-2">
+              <button type="submit" disabled={submitting}> 
+  {submitting ? 'Submitting…' : 'Submit RSVP'}
+</button>
+            </div>
+          </form>
+        </div>
+
+        {/* small note */}
+        <p className="mt-6 text-center text-xs text-[#6b5a4e]">
+          If plans change after submitting, please reach out so we can update seating & meals.
+        </p>
       </div>
+    </section>
 
-      {/* small note */}
-      <p className="mt-6 text-center text-xs text-[#6b5a4e]">
-        If plans change after submitting, please reach out so we can update seating & meals.
-      </p>
-    </div>
-  </section>      
       </FadeInSection>
 
     
