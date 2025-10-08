@@ -26,7 +26,7 @@
   font-weight: 400;
 }
 
-
+.font-spectral { font-family: var(--font-spectral), serif; }
 /* Tokens */
 :root {
   --background: #ffffff;

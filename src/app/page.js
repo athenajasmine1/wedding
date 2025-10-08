@@ -188,6 +188,40 @@ async function handleSubmitAll(e) {
       return;
     }
 
+    try {
+  // Build a minimal payload for the email
+  const first = (e.currentTarget.firstName?.value || "").trim();
+  const last  = (e.currentTarget.lastName?.value  || "").trim();
+  const email = (e.currentTarget.email?.value     || "").trim();
+  const attending = true;                   // or read the radio value if you need it
+  const guests    = selectedCount || 1;     // already computed
+  const diet      = e.currentTarget.diet?.value || "";
+  const message   = e.currentTarget.message?.value || "";
+
+  // Fire the email API (this hits /src/app/api/rsvp/route.js)
+  const res = await fetch("/api/rsvp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      firstName: first,
+      lastName:  last,
+      email,
+      attending,
+      guests,
+      diet,
+      message
+    }),
+  });
+
+  const j = await res.json();
+  if (!res.ok) {
+    console.warn("Email send failed:", j?.error || res.statusText);
+    // don’t block UX — still proceed to thank-you
+  }
+} catch (err) {
+  console.warn("Email fetch error:", err);
+}
+
     await handleSubmitFamilyRSVP();
 
     await supabase.from('group_locks').insert({ group_ID: groupId }).select().single();
@@ -223,12 +257,10 @@ async function handleSubmitAll(e) {
 
   // RSVP form handler
   async function handleRsvpSubmit(e) {
-  e.preventDefault();
+  e.preventDefault();               // <- required
   setSubmitting(true);
-
   try {
-    const fd = new FormData(e.currentTarget);
-
+    const fd = new FormData(e.currentTarget);  // <- THIS LINE GOES HERE
     const payload = {
       firstName:  String(fd.get("firstName") || ""),
       lastName:   String(fd.get("lastName") || ""),
@@ -238,8 +270,8 @@ async function handleSubmitAll(e) {
       guests:     Number(fd.get("guests") || 1),
       diet:       String(fd.get("diet") || ""),
       message:    String(fd.get("message") || ""),
+      // optionally: groupId, selectedList...
     };
-
     const res = await fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -296,6 +328,8 @@ async function handleSubmitAll(e) {
         </div>
       </nav>
     </header>
+
+    
       
       <FadeInSection>
         <section
@@ -314,14 +348,21 @@ async function handleSubmitAll(e) {
     
 
 
-        <div className="relative z-10 text-center mt-12 md:mt-20">
-  <h1 className="text-7xl md:text-9xl font-serif tracking-wide text-white leading-tight mb-1 md:mb-2">
-  John & Kristen
-</h1>
+       <div className="relative z-10 text-center mt-12 md:mt-20">
+  <h1
+    className="font-serif tracking-wide text-white leading-tight mb-1 md:mb-2"
+    style={{
+      /* ~64px → 132px as the viewport grows */
+      fontSize: "clamp(4rem, 8vw, 8.25rem)",
+      letterSpacing: "0.02em",
+    }}
+  >
+    John & Kristen
+  </h1>
 
           <p
-  className="script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
-  style={{ fontSize: "clamp(1.6rem, 2.6vw + 1rem, 3.1rem)" }}
+  className="font-spectral script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
+  style={{ fontSize: 'clamp(1.6rem, 2.6vw + 1rem, 3.1rem)' }}
 >
   are getting married!
 </p>
@@ -335,6 +376,9 @@ async function handleSubmitAll(e) {
 
       {/* Love Story */}
       <FadeInSection>
+
+        
+
         
         <section
         id="about"
@@ -499,7 +543,7 @@ async function handleSubmitAll(e) {
 
         {/* Card */}
         <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
-<form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmitAll}>
+<form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleRsvpSubmit}>
   {/* Name entry note */}
   <div className="md:col-span-2 mb-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
     <p>

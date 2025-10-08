@@ -24,8 +24,8 @@ export default function Countdown() {
 
   const Item = ({ value, label }) => (
     <div className="text-center">
-      <div className="text-5xl md:text-6xl font-serif text-[#6b5a4e]">{value}</div>
-      <div className="mt-1 text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#b7a9a0]">{label}</div>
+      <div className="text-5xl md:text-6xl font-serif text-[#4a4039]">{value}</div>
+      <div className="mt-1 text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#211e1c]">{label}</div>
     </div>
   );
 

@@ -31,9 +31,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${titleFont.variable} ${bodyFont.variable}`}>
+      <body
+        className={`${titleFont.variable} ${bodyFont.variable}`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>
   );
 }
+
