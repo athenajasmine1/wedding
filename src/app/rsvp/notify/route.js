@@ -2,71 +2,130 @@ import { Resend } from 'resend';
 
 export async function POST(req) {
   try {
-    const payload = await req.json();
-    const {
-      firstName, lastName, email, attending, guestsCount, diet, message,
-      groupId, selectedList = []  // array of strings (names checked as coming)
-    } = payload;
+    // 0) ENV sanity
+    if (!process.env.RESEND_API_KEY) {
+      return Response.json(
+        { ok: false, error: 'Missing RESEND_API_KEY env var' },
+        { status: 500 }
+      );
+    }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const site = process.env.SITE_NAME || 'Our Wedding';
+    const FROM =
+      process.env.FROM_EMAIL?.trim() || 'onboarding@resend.dev'; // fallback works but verify domain for best delivery
+    const ADMIN_LIST = (process.env.ADMIN_EMAIL || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const SITE = process.env.SITE_NAME || 'Our Wedding';
 
-    // Build simple HTML blocks
+    // 1) Parse body
+    const payload = await req.json();
+    const {
+      firstName = '',
+      lastName = '',
+      email = '',
+      attending = true,
+      guestsCount,
+      diet = '',
+      message = '',
+      groupId = '',
+      selectedList = [],
+      phone = '',
+    } = payload || {};
+
+    if (!email) {
+      return Response.json(
+        { ok: false, error: 'Email is required' },
+        { status: 400 }
+      );
+    }
+
+    // 2) Compose HTML/Text
     const familyHtml = selectedList.length
-      ? `<ul>${selectedList.map(n => `<li>${n}</li>`).join('')}</ul>`
+      ? `<ul>${selectedList.map((n) => `<li>${n}</li>`).join('')}</ul>`
       : '<em>No family selected</em>';
 
-    // 1) Guest confirmation
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL,
-      to: email,
-      subject: `RSVP received — ${site}`,
-      html: `
-        <div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-          <h2>Thank you, ${firstName}!</h2>
-          <p>We received your RSVP${
-            groupId ? ` for group <strong>${groupId}</strong>` : ''
-          }.</p>
-          <p><strong>Attending:</strong> ${attending ? 'Yes' : 'No'}</p>
-          <p><strong>Total guests (incl. you):</strong> ${guestsCount ?? ''}</p>
-          ${diet ? `<p><strong>Dietary:</strong> ${diet}</p>` : ''}
-          ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
-          <p><strong>Family marked as coming:</strong></p>
-          ${familyHtml}
-          <p style="margin-top:16px">If anything changes, reply to this email.</p>
-        </div>
-      `,
-    });
+    const userSubject = `RSVP received — ${SITE}`;
+    const userHtml = `
+      <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
+        <h2>Thank you, ${firstName}!</h2>
+        <p>We’ve received your RSVP${groupId ? ` for group <strong>${groupId}</strong>` : ''}.</p>
+        <table style="margin-top:8px">
+          <tr><td><strong>Name:</strong></td><td>${firstName} ${lastName}</td></tr>
+          <tr><td><strong>Attending:</strong></td><td>${attending ? 'Yes' : 'No'}</td></tr>
+          <tr><td><strong>Total guests (incl. you):</strong></td><td>${guestsCount ?? ''}</td></tr>
+          ${diet ? `<tr><td><strong>Dietary:</strong></td><td>${diet}</td></tr>` : ''}
+          ${message ? `<tr><td><strong>Message:</strong></td><td>${message}</td></tr>` : ''}
+        </table>
+        <p style="margin-top:12px"><strong>Family marked as coming:</strong></p>
+        ${familyHtml}
+        <p style="margin-top:16px">If anything changes, just reply to this email.</p>
+        <p>— John & Kristen</p>
+      </div>
+    `;
+    const userText = `Thanks ${firstName}! We received your RSVP${groupId ? ` for group ${groupId}` : ''}.
+Attending: ${attending ? 'Yes' : 'No'}
+Guests (incl. you): ${guestsCount ?? ''}${diet ? `\nDietary: ${diet}` : ''}${message ? `\nMessage: ${message}` : ''}
+Family: ${selectedList.join(', ') || 'None'}
+— John & Kristen`;
 
-    
+    const adminSubject = `New RSVP — ${firstName} ${lastName}${groupId ? ` (${groupId})` : ''}`;
+    const adminHtml = `
+      <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
+        <h3>New RSVP</h3>
+        <table>
+          <tr><td><strong>Name:</strong></td><td>${firstName} ${lastName}</td></tr>
+          <tr><td><strong>Email:</strong></td><td>${email}</td></tr>
+          ${phone ? `<tr><td><strong>Phone:</strong></td><td>${phone}</td></tr>` : ''}
+          ${groupId ? `<tr><td><strong>Group:</strong></td><td>${groupId}</td></tr>` : ''}
+          <tr><td><strong>Attending:</strong></td><td>${attending ? 'Yes' : 'No'}</td></tr>
+          <tr><td><strong>Guests (incl. them):</strong></td><td>${guestsCount ?? ''}</td></tr>
+          ${diet ? `<tr><td><strong>Dietary:</strong></td><td>${diet}</td></tr>` : ''}
+          ${message ? `<tr><td><strong>Message:</strong></td><td>${message}</td></tr>` : ''}
+        </table>
+        <p style="margin-top:12px"><strong>Family marked as coming:</strong></p>
+        ${familyHtml}
+      </div>
+    `;
+    const adminText = `New RSVP
+Name: ${firstName} ${lastName}
+Email: ${email}${phone ? `\nPhone: ${phone}` : ''}${groupId ? `\nGroup: ${groupId}` : ''}
+Attending: ${attending ? 'Yes' : 'No'}
+Guests (incl. them): ${guestsCount ?? ''}${diet ? `\nDietary: ${diet}` : ''}${message ? `\nMessage: ${message}` : ''}
+Family: ${selectedList.join(', ') || 'None'}`;
 
-    // 2) Admin alert
-    const adminTo = (process.env.ADMIN_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean);
-    if (adminTo.length) {
-      await resend.emails.send({
-        from: process.env.FROM_EMAIL,
-        to: adminTo,
-        subject: `New RSVP — ${firstName} ${lastName} ${groupId ? `(${groupId})` : ''}`,
-        html: `
-          <div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-            <h3>New RSVP</h3>
-            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            ${groupId ? `<p><strong>Group:</strong> ${groupId}</p>` : ''}
-            <p><strong>Attending:</strong> ${attending ? 'Yes' : 'No'}</p>
-            <p><strong>Guests (incl. them):</strong> ${guestsCount ?? ''}</p>
-            ${diet ? `<p><strong>Dietary:</strong> ${diet}</p>` : ''}
-            ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
-            <p><strong>Family marked as coming:</strong></p>
-            ${familyHtml}
-          </div>
-        `,
-      });
+    // 3) Send both emails (guest + admin). If no ADMIN_EMAIL, skip admin.
+    const tasks = [
+      resend.emails.send({
+        from: FROM,             // e.g., "Weddings <noreply@johnandkristen.ca>"
+        to: email,              // guest email
+        subject: userSubject,
+        html: userHtml,
+        text: userText,
+        reply_to: ADMIN_LIST[0] || undefined, // replies go to you
+      }),
+    ];
+
+    if (ADMIN_LIST.length) {
+      tasks.push(
+        resend.emails.send({
+          from: FROM,
+          to: ADMIN_LIST,
+          subject: adminSubject,
+          html: adminHtml,
+          text: adminText,
+        })
+      );
     }
+
+    await Promise.all(tasks);
 
     return Response.json({ ok: true });
   } catch (e) {
-    console.error(e);
-    return Response.json({ ok: false, error: String(e) }, { status: 500 });
+    console.error('RSVP email error:', e);
+    const msg =
+      typeof e === 'object' && e && 'message' in e ? e.message : String(e);
+    return Response.json({ ok: false, error: msg }, { status: 500 });
   }
 }

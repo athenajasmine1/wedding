@@ -21,8 +21,8 @@ export default function ThankYouPage() {
 
       {/* Overlay text */}
       <div className="absolute inset-0 flex flex-col justify-center items-center text-white text-center px-6">
-        <h1 className="text-6xl md:text-7xl font-serif tracking-wide mb-6">
-          THANK YOU
+        <h1 className="mt-2 text-3xl md:text-4xl font-serif tracking-[-0.02em]">
+          Thank you
         </h1>
         <p className="text-3xl font-great-vibes">
           Love, {firstName} {lastName}

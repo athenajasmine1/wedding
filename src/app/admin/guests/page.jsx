@@ -38,7 +38,8 @@ export default function GuestsPage() {
             return prev.map((r) => (r.id === row.id ? { ...r, ...payload.new } : r));
           }
           if (payload.eventType === 'DELETE') {
-            return prev.filter((r) => r.id !== row.id);
+            const removed = payload.old; // deleted row
+            return prev.filter(r => r.id === undefined ? true : r.id !== removed.id);
           }
           return prev;
         });
@@ -76,6 +77,25 @@ export default function GuestsPage() {
       prev.map((row) => (row.id === id ? { ...row, ...data } : row))
     );
   }
+
+  async function handleDelete(id) {
+  if (!confirm('Delete this RSVP? This cannot be undone.')) return;
+
+  const { error } = await supabase
+    .from('rsvps')
+    .delete()
+    .eq('id', numericId); // delete by PK
+
+  if (error) {
+    console.error('Delete failed:', error);
+    alert(`Delete failed: ${error.message}`);
+    return;
+  }
+
+  // remove from local state (Realtime will also drop it if you subscribed)
+  setRsvps(prev => prev.filter(r => r.id !== numericId));
+}
+
 
   // NEW: all distinct groups (supports group_ID or group_id, whichever your rows use)
   const groups = useMemo(() => {
@@ -156,13 +176,22 @@ export default function GuestsPage() {
                 <td className="px-4 py-2 text-center">{r.guests ?? (r.attending ? 1 : 0)}</td>
                 <td className="px-4 py-2 text-center">
                   <button
-                    onClick={() => handleToggleAttending(r.id, !r.attending)}
-                    className={`px-3 py-1.5 rounded ${
-                      r.attending ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                    }`}
-                  >
-                    {r.attending ? 'Block' : 'Allow'}
-                  </button>
+    onClick={() => handleToggleAttending(r.id, !r.attending)}
+    className={`px-3 py-1.5 rounded-lg font-medium transition mr-2 ${
+      r.attending
+        ? 'bg-red-100 text-red-600 hover:bg-red-200'
+        : 'bg-green-100 text-green-600 hover:bg-green-200'
+    }`}
+  >
+    {r.attending ? 'Block' : 'Allow'}
+  </button>
+
+  <button
+    onClick={() => handleDelete(r.id)}
+    className="px-3 py-1.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+  >
+    Delete
+  </button>
                 </td>
               </tr>
             ))}

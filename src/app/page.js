@@ -12,6 +12,15 @@ export default function Home() {
 
   
 
+// at top of the file with other hooks
+const [scrolled, setScrolled] = useState(false);
+useEffect(() => {
+  const onScroll = () => setScrolled(window.scrollY > 10);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  return () => window.removeEventListener('scroll', onScroll);
+}, []);
+
 
 const [groupId, setGroupId] = useState("");
 const [family, setFamily] = useState([]);              // [{first_name,last_name}]
@@ -85,6 +94,24 @@ const gid = me.group_ID;                       // <-- group_ID
 
 function toggleMember(fullName) {
   setSelected(prev => ({ ...prev, [fullName]: !prev[fullName] }));
+}
+
+
+
+async function verifyGuestOnList(first, last) {
+  const f = (first || '').trim();
+  const l = (last || '').trim();
+  if (!f || !l) return null;
+
+  const { data, error } = await supabase
+    .from('guests')
+    .select('first_name, last_name, group_ID')
+    .ilike('first_name', f)   // case-insensitive
+    .ilike('last_name', l)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ?? null;
 }
 
 // Save SAME-group selections into rsvps, then (optionally) trigger your email route
@@ -239,13 +266,41 @@ async function handleSubmitAll(e) {
 
   
   return (
-    <main className="bg-[#c3c7b3] font-sans">
+    <main className="bg-[#c3c7b3]">
+
+      <header className="fixed inset-x-0 top-0 z-50">
+      {/* Top name bar (transparent) */}
+      <div
+  className={`${scrolled ? 'bg-[#c3c7b3]/95 shadow-sm' : 'bg-[#c3c7b3]/90'} backdrop-blur transition-colors`}
+>
+  <div className="max-w-6xl mx-auto px-6 py-4">
+    <h1 className="script-title text-3xl md:text-4xl text-[#3e3a37] text-center">
+  John & Kristen
+</h1>
+
+  </div>
+  <div className="border-b border-transparent" />
+</div>
+
+      {/* Slim nav strip (fully transparent) */}
+      <nav className="bg-transparent">
+        <div className="max-w-6xl mx-auto px-6">
+          <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#000000]">
+            <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
+            <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
+            <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
+            <li><a href="#timeline" className="inline-block py-3 hover:opacity-70">Timeline</a></li>
+            <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
+            <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
+          </ul>
+        </div>
+      </nav>
+    </header>
       
       <FadeInSection>
         <section
         id="home"
-        className="relative w-full h-screen flex items-center justify-center"
-      >
+        className="relative w-full h-screen flex items-center justify-center pt-16 md:pt-24">
 
       <Image
           src="/about20.jpeg"
@@ -255,40 +310,21 @@ async function handleSubmitAll(e) {
           priority
         />
         
-      {/* header OVER the image (no space) */}
-        <header className="absolute inset-x-0 top-0 z-50">
-          {/* Top name bar */}
-          <div className="w-full bg-[#c3c7b3]/90 backdrop-blur">
-            <div className="max-w-6xl mx-auto px-6 py-4">
-              <h1 className="text-center font-serif text-2xl md:text-3xl tracking-[0.35em] uppercase text-[#3e3a37]">
-                JOHN & KRISTEN
-              </h1>
-            </div>
-            <div className="border-b border-[#d1b8cf]" />
-          </div>
+      {/* sticky header over the page (transparent) */}
+    
 
-        {/* Slim nav strip */}
-          <nav className="w-full bg-[#d1b8c]/90 backdrop-blur">
-            <div className="max-w-6xl mx-auto px-6">
-              <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#3e3a37]">
-                <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
-                <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
-                <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
-                <li><a href="#timeline" className="inline-block py-3 hover:opacity-70">Timeline</a></li>
-                <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
-                <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
-              </ul>
-            </div>
-          </nav>
-        </header>
 
-        <div className="relative z-10 text-center">
-          <h1 className="text-6xl md:text-8xl font-serif tracking-wide  text-white">
-            JOHN & KRISTEN
-          </h1>
-          <p className="mt-4 text-2xl font-great-vibes italic  text-white">
-            are getting married!
-          </p>
+        <div className="relative z-10 text-center mt-12 md:mt-20">
+  <h1 className="text-7xl md:text-9xl font-serif tracking-wide text-white leading-tight mb-1 md:mb-2">
+  John & Kristen
+</h1>
+
+          <p
+  className="script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
+  style={{ fontSize: "clamp(1.6rem, 2.6vw + 1rem, 3.1rem)" }}
+>
+  are getting married!
+</p>
           <p className="mt-2 text-lg tracking-widest  text-white">APRIL 25, 2026</p>
         </div>
       </section>
@@ -299,27 +335,39 @@ async function handleSubmitAll(e) {
 
       {/* Love Story */}
       <FadeInSection>
-        <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12">
+        
+        <section
+        id="about"
+        className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12 scroll-mt-24"
+      >
         {/* Text */}
         <div className="md:w-1/2">
-          <h2 className="text-4xl font-great-vibes mb-6">
-            This is our love story
-          </h2>
-          <p className="leading-relaxed text-black mb-4">
-            If you ask John, he’ll say he saw Kristen first. But technically, Kristen spotted him before he ever knew it. Months before they officially met, a friend had wanted to introduce Kristen to another John De Leon. Out of curiosity, she searched him up on social media — only to stumble upon a different profile: John Gabriel De Leon, the man who would one day become her husband.
-          </p>
-          <p className="leading-relaxed text-black mb-4">
-           Months later, their paths finally crossed when both were invited by a mutual friend to SFC’s Christian Life Program. During a fellowship after one of the events, John chose a seat across from Kristen, and even though the table was full, their attention never drifted far from each other. They quickly realized how much they had in common — both being the eldest in their families, volunteering at the same place, and sharing a strong desire to grow deeper in their faith.
+          <h2 className="text-4xl font-great-vibes mb-6">This is our love story</h2>
 
+          <p className="leading-relaxed text-black mb-4">
+            If you ask John, he’ll say he saw Kristen first. But technically,
+            Kristen spotted him before he ever knew it. Months before they officially met,
+            a friend had wanted to introduce Kristen to another John De Leon. Out of curiosity,
+            she searched him up on social media — only to stumble upon a different profile:
+            John Gabriel De Leon, the man who would one day become her husband.
           </p>
+
+          <p className="leading-relaxed text-black mb-4">
+            Months later, their paths finally crossed when both were invited by a mutual friend
+            to SFC’s Christian Life Program. During a fellowship after one of the events,
+            John chose a seat across from Kristen, and even though the table was full,
+            their attention never drifted far from each other. They quickly realized how much
+            they had in common — both being the eldest in their families, volunteering at the same place,
+            and sharing a strong desire to grow deeper in their faith.
+          </p>
+
           <p className="leading-relaxed text-black">
-            Not long after, John invited Kristen out for coffee — though in truth, he wanted more time together, so their first official date ended up being at Kinjo.
-
-          The date went well, to say the least. What started as one meal has turned into countless more, and soon, a lifetime of them together.
-
-
+            Not long after, John invited Kristen out for coffee — though in truth, he wanted more time together,
+            so their first official date ended up being at Kinjo. The date went well, to say the least.
+            What started as one meal has turned into countless more, and soon, a lifetime of them together.
           </p>
         </div>
+
         {/* Image */}
         <div className="md:w-1/2 rounded-2xl overflow-hidden">
           <Image
@@ -328,9 +376,10 @@ async function handleSubmitAll(e) {
             width={600}
             height={400}
             className="object-cover"
+            priority
           />
         </div>
-      </section>      
+      </section>
       </FadeInSection>
 
       {/* Love Story — Row 2 (alternate layout) */}
@@ -377,7 +426,7 @@ async function handleSubmitAll(e) {
           <div className="md:col-span-2 relative">
             <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-black/5 bg-white shadow-lg">
               <Image
-                src="/about4.jpg"
+                src="/about04.png"
                 alt="Our engagement"
                 fill
                 className="object-cover"
@@ -412,8 +461,8 @@ async function handleSubmitAll(e) {
       {/* Photo header */}
       <div className="relative w-full h-[40vh] min-h-[320px]">
         <Image
-          src="/about3.jpeg"
-          alt="John & Kristine"
+          src="/pic.png"
+          alt="John & Kristen"
           fill
           className="object-cover"
           priority
@@ -421,7 +470,7 @@ async function handleSubmitAll(e) {
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
           <h1 className="text-4xl md:text-6xl font-serif tracking-wide text-white">
-            JOHN & KRISTINE
+            John and Kristen
           </h1>
           <p className="mt-3 text-xl md:text-2xl text-white/90 font-great-vibes italic">
             are getting married
@@ -439,9 +488,10 @@ async function handleSubmitAll(e) {
           <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">
             we invite you to
           </p>
-          <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-[0.2em] uppercase">
-            Celebrate Our Wedding
-          </h2>
+          <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-normal">
+  Celebrate Our Wedding
+</h2>
+
           <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
             Please confirm your presence through the RSVP form by <strong>07.15.2025</strong>.
           </p>
@@ -450,37 +500,56 @@ async function handleSubmitAll(e) {
         {/* Card */}
         <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
 <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmitAll}>
+  {/* Name entry note */}
+  <div className="md:col-span-2 mb-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
+    <p>
+      Please enter <b>only your first and last name</b>. Don’t include middle names.
+    </p>
+    <p className="mt-1">
+      Example: <span className="font-medium">First name:</span> “Jasmine”; <span className="font-medium">Last name:</span> “De&nbsp;Leon”.
+    </p>
+  </div>
 
+  {/* First / Last */}
+  <div className="flex flex-col">
+    <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
+      First name
+    </label>
+    <input
+      id="firstName"
+      name="firstName"
+      type="text"
+      required
+      pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’-]+$"
+      title="First name only (no middle names)."
+      className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+      placeholder="e.g., Jasmine"
+      onBlur={(e) => {
+        e.currentTarget.value = e.currentTarget.value.trim().replace(/\s+/g, '');
+        syncGroupFromForm(e.currentTarget.form);
+      }}
+    />
+  </div>
 
-            {/* First / Last */}
-            <div className="flex flex-col">
-              <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
-                First name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                required
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="e.g., Kristen"
-                onBlur={(e) => syncGroupFromForm(e.currentTarget.form)}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
-                Last name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="e.g., Mendoza"
-                onBlur={(e) => syncGroupFromForm(e.currentTarget.form)}
-              />
-            </div>
+  <div className="flex flex-col">
+    <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
+      Last name
+    </label>
+    <input
+      id="lastName"
+      name="lastName"
+      type="text"
+      required
+      pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’ -]+$"
+      title="Last name only (e.g., De Leon)."
+      className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+      placeholder="e.g., De Leon"
+      onBlur={(e) => {
+        e.currentTarget.value = e.currentTarget.value.trim().replace(/\s{2,}/g, ' ');
+        syncGroupFromForm(e.currentTarget.form);
+      }}
+    />
+  </div>
 
             {/* Email / Phone */}
             <div className="flex flex-col">
@@ -613,62 +682,79 @@ async function handleSubmitAll(e) {
     
 
     <FadeInSection>
-      {/* WEDDING TIMELINE */}
-<section id="timeline" className="w-full bg-[#e9deca] text-[#2b2a28] py-16 md:py-24">
-
-  {/* Constrain everything to a centered column */}
-  <div className="mx-auto max-w-4xl px-6">
-    {/* Title */}
-    <h2 className="text-center font-serif tracking-[0.25em] text-4xl md:text-5xl uppercase mb-12">
-      Wedding<br className="hidden md:block" /> Timeline
+      {/* TIMELINE */}
+<section id="timeline" className="max-w-5xl mx-auto px-6 py-16 md:py-20">
+  <div className="text-center mb-10 md:mb-14">
+    <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-normal">
+      Order of Events
     </h2>
+  </div>
 
-    {/* The grid that holds both columns AND the center line */}
-    <div className="relative mx-auto max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-y-10 md:gap-y-16">
-      {/* center vertical line (inside same relative box) */}
-      <div className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-[#2b2a28]/50 z-0" />
-
-      {/* LEFT column */}
-      <div className="md:pr-12 space-y-10 md:space-y-12">
-        {[
-          ["1:00 PM", "Bride & Groom Get Dressed"],
-          ["2:00 PM", "Wedding Party Photos"],
-          ["3:00 PM", "Couple Hides for Ceremony"],
-          ["4:00 PM", "Cocktail Hour Begins"],
-          ["4:50 PM", "Prep for Grand Entrance"],
-          ["5:15 PM", "Dinner Served"],
-          ["6:00 PM", "Speeches"],
-        ].map(([time, label]) => (
-          <div key={time} className="relative md:text-right z-10">
-            <span className="hidden md:block absolute right-[-7px] top-2 h-3 w-3 rounded-full bg-[#2b2a28]" />
-            <p className="font-semibold text-sm tracking-wider">{time}</p>
-            <p className="uppercase text-xs opacity-80">{label}</p>
-          </div>
-        ))}
+  {/* Important dates */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+    <div className="bg-white/90 rounded-2xl shadow p-6 text-center">
+      <div className="text-2xl md:text-3xl font-great-vibes text-[#806a5a]">
+        February 25, 2026
       </div>
-
-      {/* RIGHT column */}
-      <div className="md:pl-12 space-y-10 md:space-y-12">
-        {[
-          ["11:30 AM", "Photographer Arrives"],
-          ["1:45 PM", "First Look"],
-          ["2:30 PM", "Family Group Photos"],
-          ["3:30 PM", "Ceremony"],
-          ["4:30 PM", "Remaining Group Photos"],
-          ["5:00 PM", "Grand Entrance"],
-          ["7:20 PM", "Cake Cutting"],
-          ["7:30 PM", "Party & Dancing"],
-        ].map(([time, label]) => (
-          <div key={time} className="relative z-10">
-            <span className="hidden md:block absolute left-[-7px] top-2 h-3 w-3 rounded-full bg-[#2b2a28]" />
-            <p className="font-semibold text-sm tracking-wider">{time}</p>
-            <p className="uppercase text-xs opacity-80">{label}</p>
-          </div>
-        ))}
+      <div className="mt-2 text-sm md:text-base text-[#3e3a37]">
+        RSVP Closes
+      </div>
+    </div>
+    <div className="bg-white/90 rounded-2xl shadow p-6 text-center">
+      <div className="text-2xl md:text-3xl font-great-vibes text-[#806a5a]">
+        April 25, 2026
+      </div>
+      <div className="mt-2 text-sm md:text-base text-[#3e3a37]">
+        John and Kristen Get Married!
       </div>
     </div>
   </div>
-</section>  
+
+  {/* Timeline list (UI unchanged, just new content) */}
+  <ul className="space-y-4">
+    {[
+      {
+        time: '12:30 PM',
+        title: 'Guests and Bridal Party Arrive',
+        note: 'at the Shrine Church',
+      },
+      {
+        time: '1:00 PM',
+        title: 'Church Ceremony Commences',
+        note: 'at the Shrine Church',
+      },
+      {
+        time: '2:00 PM',
+        title: 'Pictures With Guests and Bridal Party',
+        note: 'at the Shrine Church',
+      },
+      {
+        time: '5:00 PM',
+        title: 'Cocktail Hour Commences',
+        note: 'at the Malcolm Hotel',
+      },
+      {
+        time: '6:00 PM',
+        title: 'Dinner and Reception Commences',
+        note: 'at the Malcolm Hotel',
+      },
+    ].map((e, i) => (
+      <li
+        key={i}
+        className="bg-white/90 rounded-2xl shadow p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between"
+      >
+        <div className="md:w-32 shrink-0 text-[#806a5a] font-semibold tracking-wide">
+          {e.time}
+        </div>
+        <div className="mt-2 md:mt-0 md:flex-1 md:px-6">
+          <div className="font-medium text-[#3e3a37]">{e.title}</div>
+          <div className="text-sm text-[#6b5a4e]">{e.note}</div>
+        </div>
+      </li>
+    ))}
+  </ul>
+</section>
+
     </FadeInSection>
 
     <FadeInSection>
@@ -840,67 +926,81 @@ async function handleSubmitAll(e) {
 
       <FadeInSection>
       <section id="attire" className="bg-[#e8e4d5] py-16 md:py-24">
-      <div className="max-w-6xl mx-auto px-6">
+  <div className="max-w-6xl mx-auto px-6">
+    {/* Heading */}
+    <div className="text-center">
+      <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">Formal</p>
+      <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">Attire</h2>
+    </div>
 
-        {/* Heading */}
-        <div className="text-center">
-          <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">Formal</p>
-          <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">Attire</h2>
-        </div>
-
-        {/* Layout: Gentlemen (left) • Lineup (center) • Ladies (right) */}
-        <div className="mt-10 grid gap-8 md:gap-12 md:grid-cols-3 items-center text-[#3e3a37]">
-          {/* Gentlemen */}
-          <div className="text-center md:text-right">
-            <h3 className="text-lg font-semibold tracking-wide">Gentlemen</h3>
-            <p className="mt-1 text-sm text-[#6b5a4e]">Barong with black slacks</p>
-          </div>
-
-          {/* Lineup image */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-2xl aspect-[26/13]">
-              <Image
-                src="/attire_transparent.png"     // <— your transparent lineup image
-                alt="Guest attire lineup"
-                fill
-                className="object-contain drop-shadow-md"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* Ladies */}
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-semibold tracking-wide">Ladies</h3>
-            <p className="mt-1 text-sm text-[#6b5a4e]">Long gowns and dresses</p>
-          </div>
-        </div>
-
-        {/* Palette */}
-        <div className="mt-10 text-center">
-          <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">Palette</p>
-
-          <div className="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-4 place-items-center">
-            {[
-              { src: '/color01.png', label: 'Sage Green' },
-              { src: '/color02.png', label: 'Soft Yellow' },
-              { src: '/color03.png', label: 'Lavender' },
-              { src: '/color04.png', label: 'Neutral Beige' },
-              { src: '/color05.png', label: 'Warm Brown' },
-              { src: '/color06.png', label: 'Chocolate Brown' },
-            ].map((c) => (
-              <div key={c.label} className="text-center">
-                <div className="relative h-12 w-12 overflow-hidden rounded-full ring-1 ring-black/10">
-                  <Image src={c.src} alt={c.label} fill className="object-cover" />
-                </div>
-                <span className="mt-2 block text-xs text-[#3e3a37]">{c.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
+    {/* Layout: Gentlemen (left) • Lineup (center) • Ladies (right) */}
+    <div className="mt-10 grid gap-8 md:gap-12 md:grid-cols-3 items-center text-[#3e3a37]">
+      {/* Gentlemen */}
+      <div className="text-center md:text-right">
+        <h3 className="text-lg font-semibold tracking-wide">Gentlemen</h3>
+        <p className="mt-1 text-sm text-[#6b5a4e]">Suit</p>
       </div>
-    </section>
+
+      {/* Lineup image */}
+      <div className="flex justify-center">
+        <div className="relative w-full max-w-2xl aspect-[26/13]">
+          <Image
+            src="/attire_transparents.png"
+            alt="Guest attire lineup"
+            fill
+            className="object-contain drop-shadow-md"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Ladies */}
+      <div className="text-center md:text-left">
+        <h3 className="text-lg font-semibold tracking-wide">Ladies</h3>
+        <p className="mt-1 text-sm text-[#6b5a4e]">Long gowns and dresses</p>
+      </div>
+    </div>
+
+    {/* Palette */}
+    <div className="mt-10 text-center">
+      <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">Palette</p>
+
+      {/* 5 swatches, perfectly centered; nudge slightly right on md+ */}
+      <div className="mt-4 mx-auto w-full md:w-fit md:translate-x-4">
+        <div className="grid grid-cols-5 gap-6 place-items-center">
+          {[
+            { src: '/green.png',  label: 'Sage Green' },
+            { src: '/yellow.png', label: 'Soft Yellow' },
+            { src: '/purple.png', label: 'Lavender' },
+            { src: '/beige.png',  label: 'Neutral Beige' },
+            { src: '/brown.png',  label: 'Warm Brown' },
+          ].map((c) => (
+            <div key={c.label} className="text-center">
+              <div className="relative h-12 w-12 overflow-hidden rounded-full ring-1 ring-black/10">
+                <Image src={c.src} alt={c.label} fill className="object-cover" />
+              </div>
+              <span className="mt-2 block text-xs text-[#3e3a37]">{c.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Note under palette */}
+      <div className="max-w-3xl mx-auto mt-8 space-y-3 text-sm md:text-base text-[#3e3a37] text-center">
+        <h3 className="font-semibold">Guests’ Attire</h3>
+        <p><strong>Formal.</strong> We kindly invite our guests to dress in their finest.</p>
+        <p>
+          <strong>Gentlemen</strong> may choose a suit or dress shirt with dress pants —
+          jackets and ties are optional.
+        </p>
+        <p>
+          <strong>Ladies</strong> are encouraged to wear floor-length gowns or jumpsuits —
+          satin, chiffon, tulle, ruffles, and floral prints with the assigned colours are welcome!
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
     </FadeInSection>
 
       
@@ -937,7 +1037,7 @@ async function handleSubmitAll(e) {
           <div className="flex justify-center">
             <div className="relative w-48 h-48 md:w-64 md:h-64">
               <Image
-                src="/contact-circle.jpg" // <-- put your image at /public/contact-circle.jpg
+                src="/LOL.jpg"
                 alt="John & Kristen"
                 fill
                 className="rounded-full object-cover ring-4 ring-[#d8cfc6] shadow-xl"
