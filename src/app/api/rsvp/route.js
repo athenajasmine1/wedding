@@ -3,10 +3,13 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 console.log("[/api/rsvp] loaded");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM   = process.env.FROM_EMAIL || "Wedding <onboarding@resend.dev>";
+const FROM   = process.env.FROM_EMAIL || "Weddings <noreply@johnandkristen.ca>";
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   console.warn("[/api/rsvp] Missing Supabase env vars");

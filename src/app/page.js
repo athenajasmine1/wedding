@@ -1,300 +1,217 @@
 "use client";
 
-import FadeInSection from "../components/FadeInSection";
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { supabase } from "../lib/supabase";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import FadeInSection from "../components/FadeInSection";
 import Countdown from "../components/Countdown";
-
+import { supabase } from "../lib/supabase";
 
 export default function Home() {
+  const router = useRouter();
 
-  
+  // Sticky header style
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-// at top of the file with other hooks
-const [scrolled, setScrolled] = useState(false);
-useEffect(() => {
-  const onScroll = () => setScrolled(window.scrollY > 10);
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
-  return () => window.removeEventListener('scroll', onScroll);
-}, []);
+  // Family/RSVP state
+  const [groupId, setGroupId] = useState("");
+  const [family, setFamily] = useState([]); // [{first_name,last_name}]
+  const [selected, setSelected] = useState({}); // {"First Last": true|false}
+  const [showFamily, setShowFamily] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-
-const [groupId, setGroupId] = useState("");
-const [family, setFamily] = useState([]);              // [{first_name,last_name}]
-const [selected, setSelected] = useState({});          // {"First Last": true|false}
-const [showFamily, setShowFamily] = useState(false);
-
-// count how many checked (used to keep your form guests count via hidden input)
-const selectedCount = useMemo(
-  () => Object.values(selected).filter(Boolean).length,
-  [selected]
-);
-
-// Read current First/Last from the form and trigger lookup once both have values
-function syncGroupFromForm(form) {
-  const first = form?.firstName?.value?.trim() || "";
-  const last  = form?.lastName?.value?.trim()  || "";
-  if (first && last) handleNameChange(first, last);
-}
-
-// 1) Find guest -> get their group_ID
-// 2) Load ONLY members with SAME group_ID
-// 3) Pre-check members already RSVP'd attending=true
-async function handleNameChange(first, last) {
-  const { data: me, error: e1 } = await supabase
-    .from("guests")
-    .select('first_name,last_name,group_ID') 
-    .ilike("first_name", first)   // case-insensitive match
-    .ilike("last_name", last)
-    .maybeSingle();
-
-  if (e1 || !me?.group_ID) { setShowFamily(false); return; }
-
-const gid = me.group_ID;                       // <-- group_ID
-  setGroupId(gid);
-
-  const { data: fam, error: e2 } = await supabase
-    .from("guests")
-    .select("first_name,last_name")
-    .eq('group_ID', gid)
-    .order("last_name", { ascending: true })
-    .order("first_name", { ascending: true });
-
-  if (e2) { setShowFamily(false); return; }
-
-  const { data: rs } = await supabase
-    .from("rsvps")
-    .select("first_name,last_name,attending")
-    .eq('group_ID', gid);
-
-  const attendingSet = new Set(
-    (rs || [])
-      .filter(r => r.attending === true)
-      .map(r => `${r.first_name} ${r.last_name}`.toLowerCase())
-  );
-
-  // pre-check self + already-attending family
-  const initial = Object.fromEntries(
-    (fam || []).map(p => {
-      const full = `${p.first_name} ${p.last_name}`;
-      const isSelf =
-        p.first_name.toLowerCase() === first.toLowerCase() &&
-        p.last_name.toLowerCase() === last.toLowerCase();
-      return [full, isSelf || attendingSet.has(full.toLowerCase())];
-    })
-  );
-
-  setFamily(fam || []);
-  setSelected(initial);
-  setShowFamily(true);
-}
-
-function toggleMember(fullName) {
-  setSelected(prev => ({ ...prev, [fullName]: !prev[fullName] }));
-}
-
-
-
-async function verifyGuestOnList(first, last) {
-  const f = (first || '').trim();
-  const l = (last || '').trim();
-  if (!f || !l) return null;
-
-  const { data, error } = await supabase
-    .from('guests')
-    .select('first_name, last_name, group_ID')
-    .ilike('first_name', f)   // case-insensitive
-    .ilike('last_name', l)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ?? null;
-}
-
-// Save SAME-group selections into rsvps, then (optionally) trigger your email route
-async function handleSubmitFamilyRSVP() {
-  if (!groupId || !family.length) {
-    throw new Error('No family/group loaded yet. Type your first + last name, then click outside the field.');
-  }
-
-  const rows = family.map(p => {
-    const full = `${p.first_name} ${p.last_name}`;
-    const isAttending = !!selected[full];
-    return {
-      first_name: p.first_name,
-      last_name:  p.last_name,
-      group_ID:   groupId,            // ← SAME group enforced
-      attending:  !!selected[full],
-      guests:     isAttending ? 1 : 0, // optional: headcount
+  // keyboard shortcut to admin
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.shiftKey && e.key.toLowerCase() === "a") {
+        window.location.href = "/admin/login";
+      }
     };
-  });
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
-  console.log('Upserting rows →', rows);
+  // count checked family
+  const selectedCount = useMemo(
+    () => Object.values(selected).filter(Boolean).length,
+    [selected]
+  );
 
-  try {
-    const { data, error } = await supabase
-      .from('rsvps')
-      .upsert(rows, {
-        onConflict: 'first_name,last_name,group_ID', // MUST match a UNIQUE constraint
-        returning: 'minimal',
-      });
-
-    if (error) throw error;
-
-    // optional: fire your notify email fetch here
-    // await fetch('/api/rsvp/notify', { ... });
-
-    alert('Thanks! Your RSVP has been saved.');
-  } catch (err) {
-    console.error('RSVP upsert error:', err); // <- open devtools console to read
-    alert(`Failed to save family RSVP: ${err.message || err}`);
+  function toggleMember(fullName) {
+    setSelected((prev) => ({ ...prev, [fullName]: !prev[fullName] }));
   }
 
-  // upsert by first_name,last_name,group_ID
-  const { error } = await supabase.from('rsvps').upsert(rows, {
-    onConflict: 'first_name,last_name,group_ID', // <-- group_ID
-    returning: 'minimal',
-  });
-
-  if (error) {
-    console.error(error);
-    alert('Failed to save family RSVP');
+  // Read current First/Last from the form and trigger lookup once both have values
+  function syncGroupFromForm(form) {
+    const first = form?.firstName?.value?.trim() || "";
+    const last = form?.lastName?.value?.trim() || "";
+    if (first && last) handleNameChange(first, last);
   }
-}
 
-
-
-
-async function handleSubmitAll(e) {
-  e.preventDefault();                 // stop native submit
-   if (!groupId || !family.length) {
-    alert('Please enter your first & last name, then pick your family.');
-    return;
-  }
-  setSubmitting(true);
-  try {
-    // 1) block if the group is already locked (see section 2)
-    const { data: lock } = await supabase
-      .from('group_locks')
-      .select('*')
-      .eq('group_ID', groupId)
+  // 1) Find guest -> group_ID
+  // 2) Load ONLY members with SAME group_ID
+  // 3) Pre-check members already RSVP'd attending=true
+  async function handleNameChange(first, last) {
+    const { data: me, error: e1 } = await supabase
+      .from("guests")
+      .select("first_name,last_name,group_ID")
+      .ilike("first_name", first)
+      .ilike("last_name", last)
       .maybeSingle();
-    if (lock) {
-      // already submitted before — just route to thank you
-      router.replace('/thank-you');
+
+    if (e1 || !me?.group_ID) {
+      setShowFamily(false);
+      setGroupId("");
+      setFamily([]);
+      setSelected({});
       return;
     }
 
-    try {
-  // Build a minimal payload for the email
-  const first = (e.currentTarget.firstName?.value || "").trim();
-  const last  = (e.currentTarget.lastName?.value  || "").trim();
-  const email = (e.currentTarget.email?.value     || "").trim();
-  const attending = true;                   // or read the radio value if you need it
-  const guests    = selectedCount || 1;     // already computed
-  const diet      = e.currentTarget.diet?.value || "";
-  const message   = e.currentTarget.message?.value || "";
+    const gid = me.group_ID;
+    setGroupId(gid);
 
-  // Fire the email API (this hits /src/app/api/rsvp/route.js)
-  const res = await fetch("/api/rsvp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      firstName: first,
-      lastName:  last,
-      email,
-      attending,
-      guests,
-      diet,
-      message
-    }),
-  });
+    const { data: fam, error: e2 } = await supabase
+      .from("guests")
+      .select("first_name,last_name")
+      .eq("group_ID", gid)
+      .order("last_name", { ascending: true })
+      .order("first_name", { ascending: true });
 
-  const j = await res.json();
-  if (!res.ok) {
-    console.warn("Email send failed:", j?.error || res.statusText);
-    // don’t block UX — still proceed to thank-you
-  }
-} catch (err) {
-  console.warn("Email fetch error:", err);
-}
+    if (e2) {
+      setShowFamily(false);
+      return;
+    }
 
-    await handleSubmitFamilyRSVP();
+    const { data: rs } = await supabase
+      .from("rsvps")
+      .select("first_name,last_name,attending")
+      .eq("group_ID", gid);
 
-    await supabase.from('group_locks').insert({ group_ID: groupId }).select().single();
+    const attendingSet = new Set(
+      (rs || [])
+        .filter((r) => r.attending === true)
+        .map((r) => `${r.first_name} ${r.last_name}`.toLowerCase())
+    );
 
-    // 4) go to thank-you
-    router.replace('/thank-you');   // use replace so back button doesn’t resubmit
-  } catch (err) {
-    console.error('Submit error:', err);
-    alert(err?.message || 'Failed to save RSVP');
-  } finally {
-    setSubmitting(false);
+    const initial = Object.fromEntries(
+      (fam || []).map((p) => {
+        const full = `${p.first_name} ${p.last_name}`;
+        const isSelf =
+          p.first_name.toLowerCase() === first.toLowerCase() &&
+          p.last_name.toLowerCase() === last.toLowerCase();
+        return [full, isSelf || attendingSet.has(full.toLowerCase())];
+      })
+    );
+
+    setFamily(fam || []);
+    setSelected(initial);
+    setShowFamily(true);
   }
 
-}
-
-  
-
-  
-  const router = useRouter();
-  const [submitting, setSubmitting] = useState(false); // ⬅️ add this
-
-  useEffect(() => {
-  const handleKey = (e) => {
-    if (e.shiftKey && e.key.toLowerCase() === "a") {
-  window.location.href = "/admin/login";
-}
-
-  };
-  window.addEventListener("keydown", handleKey);
-  return () => window.removeEventListener("keydown", handleKey);
-}, []);
-
-
-  // RSVP form handler
-  async function handleRsvpSubmit(e) {
-  e.preventDefault();               // <- required
-  setSubmitting(true);
-  try {
-    const fd = new FormData(e.currentTarget);  // <- THIS LINE GOES HERE
-    const payload = {
-      firstName:  String(fd.get("firstName") || ""),
-      lastName:   String(fd.get("lastName") || ""),
-      email:      String(fd.get("email") || ""),
-      phone:      String(fd.get("phone") || ""),
-      attending:  String(fd.get("attending") || "yes") === "yes",
-      guests:     Number(fd.get("guests") || 1),
-      diet:       String(fd.get("diet") || ""),
-      message:    String(fd.get("message") || ""),
-      // optionally: groupId, selectedList...
-    };
-    const res = await fetch("/api/rsvp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+  // Save SAME-group selections into rsvps
+  async function upsertFamilySelections() {
+    if (!groupId || !family.length) {
+      throw new Error(
+        "No family/group loaded yet. Type your first + last name, then click outside the field."
+      );
+    }
+    const rows = family.map((p) => {
+      const full = `${p.first_name} ${p.last_name}`;
+      const isAttending = !!selected[full];
+      return {
+        first_name: p.first_name,
+        last_name: p.last_name,
+        group_ID: groupId,
+        attending: isAttending,
+        guests: isAttending ? 1 : 0,
+      };
     });
 
-    const json = await res.json();
-    if (!res.ok || json.error) {
-      alert(`RSVP failed: ${json.error || res.statusText}`);
-      return;
-    }
-
-    // success → go to thank-you page
-    const first = encodeURIComponent(payload.firstName);
-    const last  = encodeURIComponent(payload.lastName);
-    window.location.href = `/thank-you?firstName=${first}&lastName=${last}`;
-  } catch (err) {
-    console.error(err);
-    alert(err.message || "Sorry, something went wrong.");
-  } finally {
-    setSubmitting(false);
+    const { error } = await supabase.from("rsvps").upsert(rows, {
+      onConflict: "first_name,last_name,group_ID",
+      returning: "minimal",
+    });
+    if (error) throw error;
   }
-}
+
+  // Main RSVP form submit (sends email via /api/rsvp and saves selections)
+  async function handleRsvpSubmit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      // Optional group lock (skip if you don’t use the table)
+      if (groupId) {
+        const { data: lock } = await supabase
+          .from("group_locks")
+          .select("*")
+          .eq("group_ID", groupId)
+          .maybeSingle();
+        if (lock) {
+          router.replace("/thank-you");
+          return;
+        }
+      }
+
+      const fd = new FormData(e.currentTarget);
+      const payload = {
+        firstName: String(fd.get("firstName") || ""),
+        lastName: String(fd.get("lastName") || ""),
+        email: String(fd.get("email") || ""),
+        phone: String(fd.get("phone") || ""),
+        attending: String(fd.get("attending") || "yes") === "yes",
+        guests: Number(fd.get("guests") || selectedCount || 1),
+        diet: String(fd.get("diet") || ""),
+        message: String(fd.get("message") || ""),
+        // Optional, handy for your /api route:
+        groupId,
+        selectedList: Object.keys(selected).filter((k) => !!selected[k]),
+      };
+
+      // Fire email route (and simple row insert your /api handles)
+      const res = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.warn("RSVP API error:", json?.error || res.statusText);
+      }
+
+      // Save selections in Supabase (family grid)
+      if (family.length) {
+        await upsertFamilySelections();
+      }
+
+      // Optionally mark group locked
+      if (groupId) {
+        await supabase
+          .from("group_locks")
+          .insert({ group_ID: groupId })
+          .select()
+          .single()
+          .catch(() => {});
+      }
+
+      // Go to thank-you
+      const first = encodeURIComponent(payload.firstName);
+      const last = encodeURIComponent(payload.lastName);
+      router.replace(`/thank-you?firstName=${first}&lastName=${last}`);
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert(err?.message || "Failed to submit RSVP");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
 
   
   return (
