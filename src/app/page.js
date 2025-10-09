@@ -7,6 +7,7 @@ import FadeInSection from "../components/FadeInSection";
 import Countdown from "../components/Countdown";
 import { supabase } from "../lib/supabase";
 
+
 export default function Home() {
   const router = useRouter();
 
