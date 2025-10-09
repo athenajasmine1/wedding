@@ -22,8 +22,8 @@ const bodyFont = Spectral({
 
 
 export const metadata = {
-  title: 'John & Kristen',
-  description: 'Wedding Website',
+  metadataBase: new URL('https://johnandkristen.ca'),
+  alternates: { canonical: '/' },
 };
 
 
