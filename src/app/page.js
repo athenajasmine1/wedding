@@ -133,84 +133,108 @@ export default function Home() {
       };
     });
 
-    const { error } = await supabase.from("rsvps").upsert(rows, {
-      onConflict: "first_name,last_name,group_ID",
-      returning: "minimal",
-    });
-    if (error) throw error;
+   const { error: lockErr } = await supabase
+  .from('group_locks')
+  .insert({ group_ID: groupId });
+if (lockErr) console.warn('group_locks insert error:', lockErr);
+
   }
 
-  // Main RSVP form submit (sends email via /api/rsvp and saves selections)
-  async function handleRsvpSubmit(e) {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      // Optional group lock (skip if you don’t use the table)
-      if (groupId) {
-        const { data: lock } = await supabase
-          .from("group_locks")
-          .select("*")
-          .eq("group_ID", groupId)
-          .maybeSingle();
-        if (lock) {
-          router.replace("/thank-you");
-          return;
-        }
-      }
+  // helper used below (keep it if you show the family grid)
+async function upsertFamilySelections() {
+  if (!family.length || !groupId) return;
 
-      const fd = new FormData(e.currentTarget);
-      const payload = {
-        firstName: String(fd.get("firstName") || ""),
-        lastName: String(fd.get("lastName") || ""),
-        email: String(fd.get("email") || ""),
-        phone: String(fd.get("phone") || ""),
-        attending: String(fd.get("attending") || "yes") === "yes",
-        guests: Number(fd.get("guests") || selectedCount || 1),
-        diet: String(fd.get("diet") || ""),
-        message: String(fd.get("message") || ""),
-        // Optional, handy for your /api route:
-        groupId,
-        selectedList: Object.keys(selected).filter((k) => !!selected[k]),
-      };
+  const rows = family.map((p) => {
+    const full = `${p.first_name} ${p.last_name}`;
+    return {
+      first_name: p.first_name,
+      last_name:  p.last_name,
+      group_ID:   groupId,
+      attending:  !!selected[full],
+      guests:     selected[full] ? 1 : 0,
+    };
+  });
 
-      // Fire email route (and simple row insert your /api handles)
-      const res = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  const { error } = await supabase
+    .from("rsvps")
+    .upsert(rows, { onConflict: "first_name,last_name,group_ID", returning: "minimal" });
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        console.warn("RSVP API error:", json?.error || res.statusText);
-      }
+  if (error) throw error;
+}
 
-      // Save selections in Supabase (family grid)
-      if (family.length) {
-        await upsertFamilySelections();
-      }
+// MAIN submit handler — exactly one function, not nested
+const handleRsvpSubmit = async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  if (!(form instanceof HTMLFormElement)) {
+    alert("Form element not found.");
+    return;
+  }
 
-      // Optionally mark group locked
-      if (groupId) {
-        await supabase
-          .from("group_locks")
-          .insert({ group_ID: groupId })
-          .select()
-          .single()
-          .catch(() => {});
-      }
+  setSubmitting(true);
+  try {
+    // Optional: block if group already locked
+    if (groupId) {
+      const { data: lockRow, error: lockErr } = await supabase
+  .from('group_locks')
+  .insert({ group_ID: groupId })
+  .select()
+  .single();  // ✅ no .catch()
 
-      // Go to thank-you
-      const first = encodeURIComponent(payload.firstName);
-      const last = encodeURIComponent(payload.lastName);
-      router.replace(`/thank-you?firstName=${first}&lastName=${last}`);
-    } catch (err) {
-      console.error("Submit error:", err);
-      alert(err?.message || "Failed to submit RSVP");
-    } finally {
-      setSubmitting(false);
+if (lockErr) {
+  // handle or ignore specific errors (e.g., duplicate insert)
+  console.warn('group_locks insert error:', lockErr);
+}
+
     }
+
+    const fd = new FormData(form);
+    const payload = {
+      firstName: String(fd.get("firstName") || ""),
+      lastName:  String(fd.get("lastName") || ""),
+      email:     String(fd.get("email") || ""),
+      phone:     String(fd.get("phone") || ""),
+      attending: String(fd.get("attending") || "yes") === "yes",
+      guests:    Number(fd.get("guests") || selectedCount || 1),
+      diet:      String(fd.get("diet") || ""),
+      message:   String(fd.get("message") || ""),
+      groupId,
+      selectedList: Object.keys(selected).filter((k) => !!selected[k]),
+    };
+
+    // Call your API (sends emails + inserts single row)
+    const res  = await fetch("/api/rsvp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) console.warn("RSVP API error:", json?.error || res.statusText);
+
+    // Save family selections (if you show that grid)
+    await upsertFamilySelections();
+
+    // Optionally mark the whole group as locked
+    if (groupId) {
+      await supabase
+        .from("group_locks")
+        .insert({ group_ID: groupId })
+        .select()
+        .single()
+      
+    }
+
+    // Redirect
+    router.replace(
+      `/thank-you?firstName=${encodeURIComponent(payload.firstName)}&lastName=${encodeURIComponent(payload.lastName)}`
+    );
+  } catch (err) {
+    console.error("Submit error:", err);
+    alert(err?.message || "Failed to submit RSVP");
+  } finally {
+    setSubmitting(false);
   }
+};
 
 
   
@@ -461,6 +485,8 @@ export default function Home() {
         {/* Card */}
         <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
 <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleRsvpSubmit}>
+
+  
   {/* Name entry note */}
   <div className="md:col-span-2 mb-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
     <p>
