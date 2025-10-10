@@ -243,21 +243,11 @@ if (lockErr) {
     <main className="bg-[#c3c7b3]">
 
       <header className="fixed inset-x-0 top-0 z-50">
-      {/* Top name bar (transparent) */}
-      <div
-  className={`${scrolled ? 'bg-[#c3c7b3]/95 shadow-sm' : 'bg-[#c3c7b3]/90'}  transition-colors`}
->
-  <div className="max-w-6xl mx-auto px-6 py-4">
-    <h1 className="script-title text-3xl md:text-4xl text-[#3e3a37] text-center">
-  John & Kristen
-</h1>
-
-  </div>
-  <div className="border-b border-transparent" />
-</div>
+      
+ 
 
       {/* Slim nav strip (fully transparent) */}
-      <nav className="bg-transparent">
+      <nav className="bg-[#c3c7b3]">
         <div className="max-w-6xl mx-auto px-6">
           <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#000000]">
             <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
