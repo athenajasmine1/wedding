@@ -12,7 +12,7 @@ export default function ThankYouPage({ searchParams }) {
   return (
     <div className="relative w-full h-screen">
       <Image
-        src="/about1.jpeg"
+        src="/about3.jpg"
         alt="Wedding Thank You"
         fill
         className="object-cover brightness-90"

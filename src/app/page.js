@@ -279,31 +279,46 @@ if (lockErr) {
   </div>
 
 
-    {/* Headline */}
-    <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
-      <div>
-        <h1
-          className="font-serif tracking-wide text-white leading-tight mb-1 md:mb-2"
-          style={{
-            fontSize: "clamp(4rem, 8vw, 8.25rem)",
-            letterSpacing: "0.02em",
-          }}
-        >
-          John &amp; Kristen
-        </h1>
+    {/* HERO TEXT — positioned in the box you marked */}
+<div
+  className="
+    absolute left-1/2 -translate-x-1/2 z-10
+    top-[22vh] md:top-[24vh] lg:top-[26vh]
+    w-[min(92vw,1000px)] px-4 text-center
+  "
+>
+  <h1
+    className="font-great-vibes drop-shadow-md leading-tight"
+    style={{
+      color: "#ccd2bf",
+      fontSize: "clamp(2.8rem, 7.2vw, 6rem)",
+    }}
+  >
+    John & Kristen
+  </h1>
 
-        <p
-          className="font-spectral script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
-          style={{ fontSize: "clamp(1.6rem, 2.6vw + 1rem, 3.1rem)" }}
-        >
-          are getting married!
-        </p>
+  <p
+    className="mt-2 font-spectral italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)]"
+    style={{
+      color: "#ccd2bf",
+      fontSize: "clamp(1.1rem, 2.2vw, 1.8rem)",
+    }}
+  >
+    are getting married!
+  </p>
 
-        <p className="mt-2 text-lg tracking-widest text-white">
-          APRIL 25, 2026
-        </p>
-      </div>
-    </div>
+  <p
+    className="mt-3 tracking-[0.32em] text-[0.7rem] md:text-sm"
+    style={{ color: "#ccd2bf" }}
+  >
+    APRIL 25, 2026
+  </p>
+</div>
+
+
+
+
+    
   </section>
 </FadeInSection>
 
@@ -428,21 +443,7 @@ if (lockErr) {
             </div>
           </div>
 
-          {/* Ring overlay (bottom-right, slightly outside the photo) */}
-  {/* RING — bottom-right, slightly outside the block */}
-    <Image
-  src="/ring-transparent.png"
-  alt="Wedding rings"
-  width={360}
-  height={360}
-  priority
-  className="
-    absolute bottom-0 right-0
-    -translate-x-28 translate-y-23
-    w-48 md:w-64 lg:w-72             /* larger */
-    pointer-events-none select-none z-10
-  "
-/>
+          
 
 
 
@@ -641,7 +642,7 @@ if (lockErr) {
     {/* Photo */}
     <div className="md:w-1/2 rounded-2xl overflow-hidden">
       <Image
-        src="/church.jpeg"
+        src="/church.jpg"
         alt="The Shrine Church of Our Lady of the Rockies"
         width={800}
         height={500}
@@ -674,7 +675,7 @@ if (lockErr) {
     {/* Photo */}
     <div className="md:w-1/2 rounded-2xl overflow-hidden">
       <Image
-        src="/weds1.jpg"
+        src="/hotel.jpg"
         alt="The Malcolm Hotel, Canmore"
         width={800}
         height={500}
