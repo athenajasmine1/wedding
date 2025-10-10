@@ -275,17 +275,19 @@ if (lockErr) {
       
      <FadeInSection>
   <section
-    id="home"
-    className="relative w-full h-[100svh] pt-16 md:pt-24"
-  >
-    {/* Full-bleed background (no blur, no compression) */}
-    <div
-      className="absolute inset-0 bg-center bg-cover bg-no-repeat"
-      style={{ backgroundImage: "url('/final.jpg')" }}
-      aria-hidden="true"
+  id="home"
+  className="relative w-full h-[100svh] pt-16 md:pt-24"
+>
+  <div className="absolute inset-0 -z-10" aria-hidden="true">
+    <Image
+      src="/about3.jpg"
+      alt=""
+      fill
+      className="object-cover object-center"
+      priority
     />
-    {/* Optional dark overlay for text legibility; adjust or remove */}
-    <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
+  </div>
+
 
     {/* Headline */}
     <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
@@ -353,7 +355,7 @@ if (lockErr) {
         <figure className="md:col-start-7 md:col-end-13">
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-black/5 shadow">
             <Image
-              src="/pic1.jpeg"
+              src="/pic.jpg"
               alt="John & Kristen"
               fill
               sizes="(max-width:768px) 100vw, 640px"
@@ -425,7 +427,7 @@ if (lockErr) {
             <div className="mt-6">
               <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden ring-1 ring-black/5 bg-white">
                 <Image
-                  src="/about3.jpeg"
+                  src="/about4.jpg"
                   alt="Rings / details"
                   fill
                   className="object-cover"
@@ -498,7 +500,7 @@ if (lockErr) {
 
       {/* Row 1 — 3 tall images */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {["/Gallery1.jpg","/Gallery2.jpg","/Gallery3.jpg"].map((src, i) => (
+  {["/Gallery1.jpg","/Gallery2s.jpg","/Gallery3.jpg"].map((src, i) => (
           <div
             key={i}
             className="relative aspect-[2/3] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white"
@@ -517,27 +519,35 @@ if (lockErr) {
 
      {/* Row 2 — two tall images, full width */}
 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-  <figure className="relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
+  {/* Card 1 */}
+  <figure className="group relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
     <Image
       src="/Gallery4.jpg"
       alt="Gallery 4"
       fill
       sizes="(max-width:768px) 100vw, 50vw"
-      className="object-cover"
+      className="object-cover transform-gpu transition-transform duration-700 ease-out
+                 group-hover:scale-[1.08] group-hover:rotate-[0.6deg] group-hover:translate-y-1"
       priority={false}
     />
+    {/* optional soft darken on hover */}
+    <div className="absolute inset-0 bg-black/0 transition-colors duration-700 group-hover:bg-black/5" />
   </figure>
 
-  <figure className="relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
+  {/* Card 2 */}
+  <figure className="group relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
     <Image
       src="/Gallery5.jpg"
       alt="Gallery 5"
       fill
       sizes="(max-width:768px) 100vw, 50vw"
-      className="object-cover"
+      className="object-cover transform-gpu transition-transform duration-700 ease-out
+                 group-hover:scale-[1.08] group-hover:rotate-[0.6deg] group-hover:translate-y-1"
     />
+    <div className="absolute inset-0 bg-black/0 transition-colors duration-700 group-hover:bg-black/5" />
   </figure>
 </div>
+
 
     </div>
   </section>
@@ -674,7 +684,7 @@ if (lockErr) {
     {/* Photo */}
     <div className="md:w-1/2 rounded-2xl overflow-hidden">
       <Image
-        src="/hotel.jpeg"
+        src="/weds1.jpg"
         alt="The Malcolm Hotel, Canmore"
         width={800}
         height={500}
@@ -875,11 +885,7 @@ if (lockErr) {
             <input id="diet" name="diet" type="text" className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="Allergies, vegetarian, etc." />
           </div>
 
-          {/* Message */}
-          <div className="flex flex-col md:col-span-2">
-            <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">Anything else?</label>
-            <textarea id="message" name="message" rows={4} className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="Extra guests name, etc.." />
-          </div>
+          
 
           {/* Submit */}
           <div className="md:col-span-2 flex justify-center pt-2">
