@@ -245,7 +245,7 @@ if (lockErr) {
       <header className="fixed inset-x-0 top-0 z-50">
       {/* Top name bar (transparent) */}
       <div
-  className={`${scrolled ? 'bg-[#c3c7b3]/95 shadow-sm' : 'bg-[#c3c7b3]/90'} backdrop-blur transition-colors`}
+  className={`${scrolled ? 'bg-[#c3c7b3]/95 shadow-sm' : 'bg-[#c3c7b3]/90'}  transition-colors`}
 >
   <div className="max-w-6xl mx-auto px-6 py-4">
     <h1 className="script-title text-3xl md:text-4xl text-[#3e3a37] text-center">
@@ -262,9 +262,9 @@ if (lockErr) {
           <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#000000]">
             <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
             <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
-            <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
             <li><a href="#timeline" className="inline-block py-3 hover:opacity-70">Timeline</a></li>
             <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
+             <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
             <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
           </ul>
         </div>
@@ -273,105 +273,133 @@ if (lockErr) {
 
     
       
-      <FadeInSection>
-        <section
-        id="home"
-        className="relative w-full h-screen flex items-center justify-center pt-16 md:pt-24">
-
-      <Image
-          src="/about20.jpeg"
-          alt="Couple"
-          fill
-          className="object-cover brightness-75"
-          priority
-        />
-        
-      {/* sticky header over the page (transparent) */}
-    
-
-
-       <div className="relative z-10 text-center mt-12 md:mt-20">
-  <h1
-    className="font-serif tracking-wide text-white leading-tight mb-1 md:mb-2"
-    style={{
-      /* ~64px → 132px as the viewport grows */
-      fontSize: "clamp(4rem, 8vw, 8.25rem)",
-      letterSpacing: "0.02em",
-    }}
+     <FadeInSection>
+  <section
+    id="home"
+    className="relative w-full h-[100svh] pt-16 md:pt-24"
   >
-    John & Kristen
-  </h1>
+    {/* Full-bleed background (no blur, no compression) */}
+    <div
+      className="absolute inset-0 bg-center bg-cover bg-no-repeat"
+      style={{ backgroundImage: "url('/final.jpg')" }}
+      aria-hidden="true"
+    />
+    {/* Optional dark overlay for text legibility; adjust or remove */}
+    <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
 
-          <p
-  className="font-spectral script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
-  style={{ fontSize: 'clamp(1.6rem, 2.6vw + 1rem, 3.1rem)' }}
->
-  are getting married!
-</p>
-          <p className="mt-2 text-lg tracking-widest  text-white">APRIL 25, 2026</p>
-        </div>
-      </section>
-      
-      </FadeInSection>
+    {/* Headline */}
+    <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
+      <div>
+        <h1
+          className="font-serif tracking-wide text-white leading-tight mb-1 md:mb-2"
+          style={{
+            fontSize: "clamp(4rem, 8vw, 8.25rem)",
+            letterSpacing: "0.02em",
+          }}
+        >
+          John &amp; Kristen
+        </h1>
+
+        <p
+          className="font-spectral script-title text-white italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)] leading-snug mt-0 md:mt-1"
+          style={{ fontSize: "clamp(1.6rem, 2.6vw + 1rem, 3.1rem)" }}
+        >
+          are getting married!
+        </p>
+
+        <p className="mt-2 text-lg tracking-widest text-white">
+          APRIL 25, 2026
+        </p>
+      </div>
+    </div>
+  </section>
+</FadeInSection>
+
 
       <Countdown />
 
-      {/* Love Story */}
-      <FadeInSection>
+    {/* Love Story */}
+<FadeInSection>
+  <section id="about" className="bg-[#ccd2bf]">
+    <div className="mx-auto max-w-6xl px-6 py-16">
 
-        
+      {/* Heading */}
+      <h2 className="font-great-vibes text-4xl md:text-5xl mb-6 md:mb-8">
+        This is our love story
+      </h2>
 
-        
-        <section
-        id="about"
-        className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row items-center gap-12 scroll-mt-24"
-      >
-        {/* Text */}
-        <div className="md:w-1/2">
-          <h2 className="text-4xl font-great-vibes mb-6">This is our love story</h2>
+      {/* Grid: 12 columns, two rows */}
+      <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-start">
 
-          <p className="leading-relaxed text-black mb-4">
-            If you ask John, he’ll say he saw Kristen first. But technically,
-            Kristen spotted him before he ever knew it. Months before they officially met,
-            a friend had wanted to introduce Kristen to another John De Leon. Out of curiosity,
-            she searched him up on social media — only to stumble upon a different profile:
-            John Gabriel De Leon, the man who would one day become her husband.
+        {/* --- Row 1: copy (left) --- */}
+        <div className="md:col-span-6 space-y-5 leading-7 text-[#2f2d2b]">
+          <p>
+            If you ask John, he’ll say he saw Kristen first. But technically, Kristen
+            spotted him before he ever knew it. Months before they officially met, a
+            friend had wanted to introduce Kristen to another John De Leon. Out of
+            curiosity, she searched him up on social media — only to stumble upon a
+            different profile: John Gabriel De Leon, the man who would one day become
+            her husband.
           </p>
-
-          <p className="leading-relaxed text-black mb-4">
-            Months later, their paths finally crossed when both were invited by a mutual friend
-            to SFC’s Christian Life Program. During a fellowship after one of the events,
-            John chose a seat across from Kristen, and even though the table was full,
-            their attention never drifted far from each other. They quickly realized how much
-            they had in common — both being the eldest in their families, volunteering at the same place,
-            and sharing a strong desire to grow deeper in their faith.
-          </p>
-
-          <p className="leading-relaxed text-black">
-            Not long after, John invited Kristen out for coffee — though in truth, he wanted more time together,
-            so their first official date ended up being at Kinjo. The date went well, to say the least.
-            What started as one meal has turned into countless more, and soon, a lifetime of them together.
+          <p>
+            Months later, their paths finally crossed when both were invited by a
+            mutual friend to SFC’s Christian Life Program. During a fellowship after
+            one of the events, John chose a seat across from Kristen; even though the
+            table was full, their attention never drifted far from each other.
           </p>
         </div>
 
-        {/* Image */}
-        <div className="md:w-1/2 rounded-2xl overflow-hidden">
-          <Image
-            src="/about1.jpeg"
-            alt="Couple photo"
-            width={600}
-            height={400}
-            className="object-cover"
-            priority
-          />
+        {/* --- Row 1: image (right) --- */}
+        <figure className="md:col-start-7 md:col-end-13">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-black/5 shadow">
+            <Image
+              src="/pic1.jpeg"
+              alt="John & Kristen"
+              fill
+              sizes="(max-width:768px) 100vw, 640px"
+              className="object-cover"
+              priority
+            />
+          </div>
+        </figure>
+
+        {/* --- Row 2: drawing (left) --- */}
+        <figure className="md:col-span-5">
+  <div className="relative w-full max-w-[14rem] sm:max-w-[16rem] md:max-w-[18rem] mx-auto">
+    <Image
+      src="/wedding_transparent.png"
+      alt="Wedding illustration"
+      width={500}
+      height={400}
+      sizes="(max-width: 640px) 14rem, (max-width: 768px) 16rem, 18rem"
+      className="w-full h-auto object-contain"
+      priority
+    />
+  </div>
+</figure>
+
+
+        {/* --- Row 2: closing paragraph (right) --- */}
+        <div className="md:col-span-7 leading-7 text-[#2f2d2b]">
+          <p>
+            They quickly realized how much they had in common — both the eldest in their
+            families, volunteering at the same place, and sharing a strong desire to grow
+            deeper in their faith. Not long after, John invited Kristen out for coffee —
+            though in truth, he wanted more time together, so their first official date
+            ended up being at Kinjo. The date went well, to say the least. What started
+            as one meal has turned into countless more, and soon, a lifetime of them together.
+          </p>
         </div>
-      </section>
-      </FadeInSection>
+      </div>
+    </div>
+  </section>
+</FadeInSection>
+
 
       {/* Love Story — Row 2 (alternate layout) */}
 <FadeInSection>
   <section id="engagement" className="bg-[#f6f2ee] py-16 md:py-24">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="relative max-w-6xl mx-auto px-6">
         <div className="grid gap-10 md:gap-14 md:grid-cols-5 items-start">
           
           {/* Left column: copy + small image */}
@@ -408,11 +436,29 @@ if (lockErr) {
             </div>
           </div>
 
+          {/* Ring overlay (bottom-right, slightly outside the photo) */}
+  {/* RING — bottom-right, slightly outside the block */}
+    <Image
+  src="/ring-transparent.png"
+  alt="Wedding rings"
+  width={360}
+  height={360}
+  priority
+  className="
+    absolute bottom-0 right-0
+    -translate-x-28 translate-y-23
+    w-48 md:w-64 lg:w-72             /* larger */
+    pointer-events-none select-none z-10
+  "
+/>
+
+
+
           {/* Right column: hero photo with decorative stamp */}
           <div className="md:col-span-2 relative">
             <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-black/5 bg-white shadow-lg">
               <Image
-                src="/about04.png"
+                src="/about11.jpg"
                 alt="Our engagement"
                 fill
                 className="object-cover"
@@ -440,236 +486,65 @@ if (lockErr) {
     </section>
 </FadeInSection>
 
-
-      <FadeInSection>
-
-       <section id="rsvp" className="bg-[#d1b8c] text-[#3e3a37]">
-      {/* Photo header */}
-      <div className="relative w-full h-[40vh] min-h-[320px]">
-        <Image
-          src="/pic.png"
-          alt="John & Kristen"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <h1 className="text-4xl md:text-6xl font-serif tracking-wide text-white">
-            John and Kristen
-          </h1>
-          <p className="mt-3 text-xl md:text-2xl text-white/90 font-great-vibes italic">
-            are getting married
-          </p>
-          <p className="mt-2 text-sm md:text-base tracking-[0.35em] text-white/90">
-            APRIL 25, 2026 • CANMORE, ALBERTA
-          </p>
-        </div>
+{/* Gallery */}
+<FadeInSection>
+  <section id="gallery" className="bg-[#f6f2ee] py-16 md:py-24">
+    <div className="max-w-6xl mx-auto px-6">
+      <div className="text-center mb-10 md:mb-14">
+        <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">
+          Gallery
+        </h2>
       </div>
 
-      {/* Copy + Form */}
-      <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
-        {/* Headings */}
-        <div className="text-center mb-10 md:mb-14">
-          <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">
-            we invite you to
-          </p>
-          <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-normal">
-  Celebrate Our Wedding
-</h2>
-
-          <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
-            Please confirm your presence through the RSVP form by <strong>07.15.2025</strong>.
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
-<form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleRsvpSubmit}>
-
-  
-  {/* Name entry note */}
-  <div className="md:col-span-2 mb-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
-    <p>
-      Please enter <b>only your first and last name</b>. Don’t include middle names.
-    </p>
-    <p className="mt-1">
-      Example: <span className="font-medium">First name:</span> “Jasmine”; <span className="font-medium">Last name:</span> “De&nbsp;Leon”.
-    </p>
-  </div>
-
-  {/* First / Last */}
-  <div className="flex flex-col">
-    <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">
-      First name
-    </label>
-    <input
-      id="firstName"
-      name="firstName"
-      type="text"
-      required
-      pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’-]+$"
-      title="First name only (no middle names)."
-      className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-      placeholder="e.g., Jasmine"
-      onBlur={(e) => {
-        e.currentTarget.value = e.currentTarget.value.trim().replace(/\s+/g, '');
-        syncGroupFromForm(e.currentTarget.form);
-      }}
-    />
-  </div>
-
-  <div className="flex flex-col">
-    <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">
-      Last name
-    </label>
-    <input
-      id="lastName"
-      name="lastName"
-      type="text"
-      required
-      pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’ -]+$"
-      title="Last name only (e.g., De Leon)."
-      className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-      placeholder="e.g., De Leon"
-      onBlur={(e) => {
-        e.currentTarget.value = e.currentTarget.value.trim().replace(/\s{2,}/g, ' ');
-        syncGroupFromForm(e.currentTarget.form);
-      }}
-    />
-  </div>
-
-            {/* Email / Phone */}
-            <div className="flex flex-col">
-              <label htmlFor="email" className="text-xs uppercase tracking-widest mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="you@example.com"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label htmlFor="phone" className="text-xs uppercase tracking-widest mb-2">
-                Phone (optional)
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="(xxx) xxx-xxxx"
-              />
-            </div>
-
-            {/* Attendance (radios) */}
-            <div className="flex flex-col md:col-span-2">
-              <span className="text-xs uppercase tracking-widest mb-2">Will you attend?</span>
-              <div className="flex items-center gap-6">
-                <label className="inline-flex items-center gap-2">
-                  <input type="radio" name="attending" value="yes" defaultChecked className="accent-[#c8b6a6]" />
-                  <span>Yes, can’t wait!</span>
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <input type="radio" name="attending" value="no" className="accent-[#c8b6a6]" />
-                  <span>Sorry, can’t make it</span>
-                </label>
-              </div>
-            </div>
-
-            {/* FAMILY (replaces number of guests) */}
-            {showFamily && family.length > 0 && (
-              <div className="md:col-span-2">
-                <div className="rounded-xl border border-[#d8cfc6] bg-white/90 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold tracking-wide text-[#3e3a37]">
-                      Select who from your family is attending
-                    </h3>
-                    <span className="text-xs text-[#6b5a4e]">Group: <b>{groupId}</b></span>
-                  </div>
-
-                  <div className="divide-y divide-[#eee4da]">
-                    {family.map((p, i) => {
-                      const full = `${p.first_name} ${p.last_name}`;
-                      return (
-                        <label
-                          key={`${full}-${i}`}
-                          className="flex items-center justify-between py-2 px-2 hover:bg-[#f7f2ee] rounded-lg"
-                        >
-                          <span className="capitalize">{full}</span>
-                          <input
-                            type="checkbox"
-                            className="h-5 w-5 accent-[#c8b6a6]"
-                            checked={!!selected[full]}
-                            onChange={() => toggleMember(full)}
-                          />
-                        </label>
-                      );
-                    })}
-                  </div>
-
-                  {/* keep legacy consumers happy if they expect `guests` */}
-                  <input type="hidden" name="guests" value={selectedCount} />
-                  <p className="mt-3 text-[11px] text-[#6b5a4e]">
-                    (Check everyone who’s coming — including yourself.)
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Dietary */}
-            <div className="flex flex-col">
-              <label htmlFor="diet" className="text-xs uppercase tracking-widest mb-2">
-                Dietary restrictions (optional)
-              </label>
-              <input
-                id="diet"
-                name="diet"
-                type="text"
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="Allergies, vegetarian, etc."
-              />
-            </div>
-
-            {/* Message */}
-            <div className="flex flex-col md:col-span-2">
-              <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">
-                Anything else? Who is coming?
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={4}
-                className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
-                placeholder="Extra guests name, etc.."
-              />
-            </div>
-
-            {/* Submit */}
-            <div className="md:col-span-2 flex justify-center pt-2">
-              <button type="submit" disabled={submitting}> 
-  {submitting ? 'Submitting…' : 'Submit RSVP'}
-</button>
-            </div>
-          </form>
-        </div>
-
-        {/* small note */}
-        <p className="mt-6 text-center text-xs text-[#6b5a4e]">
-          If plans change after submitting, please reach out so we can update seating & meals.
-        </p>
+      {/* Row 1 — 3 tall images */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {["/Gallery1.jpg","/Gallery2.jpg","/Gallery3.jpg"].map((src, i) => (
+          <div
+            key={i}
+            className="relative aspect-[2/3] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white"
+          >
+            <Image
+              src={src}
+              alt={`Gallery ${i + 1}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+              priority={i === 0}
+            />
+          </div>
+        ))}
       </div>
-    </section>
 
-      </FadeInSection>
+     {/* Row 2 — two tall images, full width */}
+<div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <figure className="relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
+    <Image
+      src="/Gallery4.jpg"
+      alt="Gallery 4"
+      fill
+      sizes="(max-width:768px) 100vw, 50vw"
+      className="object-cover"
+      priority={false}
+    />
+  </figure>
 
-    
+  <figure className="relative h-[520px] overflow-hidden rounded-2xl ring-1 ring-black/5 bg-white">
+    <Image
+      src="/Gallery5.jpg"
+      alt="Gallery 5"
+      fill
+      sizes="(max-width:768px) 100vw, 50vw"
+      className="object-cover"
+    />
+  </figure>
+</div>
 
-    <FadeInSection>
+    </div>
+  </section>
+</FadeInSection>
+
+
+<FadeInSection>
       {/* TIMELINE */}
 <section id="timeline" className="max-w-5xl mx-auto px-6 py-16 md:py-20">
   <div className="text-center mb-10 md:mb-14">
@@ -744,6 +619,13 @@ if (lockErr) {
 </section>
 
     </FadeInSection>
+
+
+      
+
+    
+
+    
 
     <FadeInSection>
       {/* DETAILS */}
@@ -821,13 +703,208 @@ if (lockErr) {
 </section>
     </FadeInSection>
 
+    
+
+     <FadeInSection>
+  <section id="attire" className="bg-[#e8e4d5] py-16 md:py-24">
+    <div className="max-w-6xl mx-auto px-6">
+      {/* Heading */}
+      <div className="text-center">
+        <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">Formal</p>
+        <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">Attire</h2>
+      </div>
+
+      {/* Lineup image — centered & larger */}
+      <div className="mt-10 flex justify-center text-[#3e3a37]">
+        <div className="relative w-[520px] md:w-[700px] aspect-[26/13]">
+          <Image
+            src="/people_transparent.png"
+            alt="Guest attire lineup"
+            fill
+            className="object-contain drop-shadow-md"
+            sizes="(max-width:768px) 90vw, 700px"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Palette */}
+      <div className="mt-10 text-center">
+        <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">Palette</p>
+
+        {/* Larger swatches */}
+        <div className="mt-4 mx-auto w-full md:w-fit md:translate-x-4">
+          <div className="grid grid-cols-5 gap-8 place-items-center">
+            {[
+              { src: '/green.png',  label: 'Sage Green' },
+              { src: '/yellow.png', label: 'Butter Yellow' },
+              { src: '/purple.png', label: 'Lavender purple' },
+              { src: '/beige.png',  label: 'Neutral Beige' },
+              { src: '/brown.png',  label: 'Caramel Brown' },
+            ].map((c) => (
+              <div key={c.label} className="text-center">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full ring-1 ring-black/10">
+                  <Image src={c.src} alt={c.label} fill className="object-cover" />
+                </div>
+                <span className="mt-2 block text-sm text-[#3e3a37]">{c.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Note under palette (unchanged) */}
+        <div className="max-w-3xl mx-auto mt-8 space-y-3 text-sm md:text-base text-[#3e3a37] text-center">
+          <h3 className="font-semibold">Guests’ Attire</h3>
+          <p><strong>Formal.</strong> We kindly invite our guests to dress in their finest.</p>
+          <p>
+            <strong>Gentlemen</strong> may choose a suit or dress shirt with dress pants —
+            jackets and ties are optional.
+          </p>
+          <p>
+            <strong>Ladies</strong> are encouraged to wear floor-length gowns or jumpsuits —
+            satin, chiffon, tulle, ruffles, and floral prints with the assigned colours are welcome!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</FadeInSection>
+
+
     <FadeInSection>
+  <section id="rsvp" className="bg-[#d1b8c] text-[#3e3a37]">
+    
+    
+    {/* Copy + Form */}
+    <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
+      {/* Headings */}
+      <div className="text-center mb-10 md:mb-14">
+        <p className="font-great-vibes text-2xl md:text-3xl text-[#806a5a]">we invite you to</p>
+        <h2 className="mt-2 text-3xl md:text-4xl font-serif tracking-normal">Celebrate Our Wedding</h2>
+        <p className="mt-4 text-xs md:text-sm text-[#6b5a4e] tracking-wide">
+          Please confirm your presence through the RSVP form by <strong>02.25.2026</strong>.
+        </p>
+      </div>
+
+      {/* Card */}
+      <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-10">
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleRsvpSubmit}>
+          {/* Name entry note */}
+          <div className="md:col-span-2 mb-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
+            <p>Please enter <b>only your first and last name</b>. Don’t include middle names.</p>
+            <p className="mt-1">
+              Example: <span className="font-medium">First name:</span> “Jasmine”; <span className="font-medium">Last name:</span> “De&nbsp;Leon”.
+            </p>
+          </div>
+
+          {/* First / Last */}
+          <div className="flex flex-col">
+            <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">First name</label>
+            <input
+              id="firstName" name="firstName" type="text" required
+              pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’-]+$" title="First name only (no middle names)."
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="e.g., Jasmine"
+              onBlur={(e) => { e.currentTarget.value = e.currentTarget.value.trim().replace(/\s+/g, ''); syncGroupFromForm(e.currentTarget.form); }}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">Last name</label>
+            <input
+              id="lastName" name="lastName" type="text" required
+              pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’ -]+$" title="Last name only (e.g., De Leon)."
+              className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
+              placeholder="e.g., De Leon"
+              onBlur={(e) => { e.currentTarget.value = e.currentTarget.value.trim().replace(/\s{2,}/g, ' '); syncGroupFromForm(e.currentTarget.form); }}
+            />
+          </div>
+
+          {/* Email / Phone */}
+          <div className="flex flex-col">
+            <label htmlFor="email" className="text-xs uppercase tracking-widest mb-2">Email</label>
+            <input id="email" name="email" type="email" required className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="you@example.com" />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="phone" className="text-xs uppercase tracking-widest mb-2">Phone (optional)</label>
+            <input id="phone" name="phone" type="tel" className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="(xxx) xxx-xxxx" />
+          </div>
+
+          {/* Attendance */}
+          <div className="flex flex-col md:col-span-2">
+            <span className="text-xs uppercase tracking-widest mb-2">Will you attend?</span>
+            <div className="flex items-center gap-6">
+              <label className="inline-flex items-center gap-2">
+                <input type="radio" name="attending" value="yes" defaultChecked className="accent-[#c8b6a6]" />
+                <span>Yes, can’t wait!</span>
+              </label>
+              <label className="inline-flex items-center gap-2">
+                <input type="radio" name="attending" value="no" className="accent-[#c8b6a6]" />
+                <span>Sorry, can’t make it</span>
+              </label>
+            </div>
+          </div>
+
+          {/* FAMILY (if loaded) */}
+          {showFamily && family.length > 0 && (
+            <div className="md:col-span-2">
+              <div className="rounded-xl border border-[#d8cfc6] bg-white/90 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold tracking-wide text-[#3e3a37]">Select who from your family is attending</h3>
+                  <span className="text-xs text-[#6b5a4e]">Group: <b>{groupId}</b></span>
+                </div>
+                <div className="divide-y divide-[#eee4da]">
+                  {family.map((p, i) => {
+                    const full = `${p.first_name} ${p.last_name}`;
+                    return (
+                      <label key={`${full}-${i}`} className="flex items-center justify-between py-2 px-2 hover:bg-[#f7f2ee] rounded-lg">
+                        <span className="capitalize">{full}</span>
+                        <input type="checkbox" className="h-5 w-5 accent-[#c8b6a6]" checked={!!selected[full]} onChange={() => toggleMember(full)} />
+                      </label>
+                    );
+                  })}
+                </div>
+                <input type="hidden" name="guests" value={selectedCount} />
+                <p className="mt-3 text-[11px] text-[#6b5a4e]">(Check everyone who’s coming — including yourself.)</p>
+              </div>
+            </div>
+          )}
+
+          {/* Dietary */}
+          <div className="flex flex-col">
+            <label htmlFor="diet" className="text-xs uppercase tracking-widest mb-2">Dietary restrictions (optional)</label>
+            <input id="diet" name="diet" type="text" className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="Allergies, vegetarian, etc." />
+          </div>
+
+          {/* Message */}
+          <div className="flex flex-col md:col-span-2">
+            <label htmlFor="message" className="text-xs uppercase tracking-widest mb-2">Anything else?</label>
+            <textarea id="message" name="message" rows={4} className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]" placeholder="Extra guests name, etc.." />
+          </div>
+
+          {/* Submit */}
+          <div className="md:col-span-2 flex justify-center pt-2">
+            <button type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit RSVP'}</button>
+          </div>
+        </form>
+      </div>
+
+      {/* note */}
+      <p className="mt-6 text-center text-xs text-[#6b5a4e]">
+        If plans change after submitting, please reach out so we can update seating &amp; meals.
+      </p>
+    </div>
+  </section>
+</FadeInSection>
+
+<FadeInSection>
       <section id="accommodations" className="bg-[#f4f5ee] py-16 md:py-24">
       <div className="max-w-2xl mx-auto px-6">
         <div className="relative bg-[#d1b8c]/95 rounded-2xl shadow-xl ring-1 ring-black/5 px-6 py-10 md:px-10 md:py-12 text-center">
 
           {/* heading */}
-          <h className="font-great-vibes text-5xl md:text-6xl text-[#3e3a37] leading-none">Hotels</h>
+          <h2 className="text-5xl md:text-6xl text-[#3e3a37] leading-none">
+  Hotels
+</h2>
 
           {/* subtle divider */}
           <div className="mx-auto my-6 h-px w-24 bg-[#e8dee8]" />
@@ -912,84 +989,7 @@ if (lockErr) {
     </section>
     </FadeInSection>
 
-      <FadeInSection>
-      <section id="attire" className="bg-[#e8e4d5] py-16 md:py-24">
-  <div className="max-w-6xl mx-auto px-6">
-    {/* Heading */}
-    <div className="text-center">
-      <p className="tracking-[0.28em] text-[11px] md:text-xs uppercase text-[#8a7566]">Formal</p>
-      <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">Attire</h2>
-    </div>
 
-    {/* Layout: Gentlemen (left) • Lineup (center) • Ladies (right) */}
-    <div className="mt-10 grid gap-8 md:gap-12 md:grid-cols-3 items-center text-[#3e3a37]">
-      {/* Gentlemen */}
-      <div className="text-center md:text-right">
-        <h3 className="text-lg font-semibold tracking-wide">Gentlemen</h3>
-        <p className="mt-1 text-sm text-[#6b5a4e]">Suit</p>
-      </div>
-
-      {/* Lineup image */}
-      <div className="flex justify-center">
-        <div className="relative w-full max-w-2xl aspect-[26/13]">
-          <Image
-            src="/attire_transparents.png"
-            alt="Guest attire lineup"
-            fill
-            className="object-contain drop-shadow-md"
-            priority
-          />
-        </div>
-      </div>
-
-      {/* Ladies */}
-      <div className="text-center md:text-left">
-        <h3 className="text-lg font-semibold tracking-wide">Ladies</h3>
-        <p className="mt-1 text-sm text-[#6b5a4e]">Long gowns and dresses</p>
-      </div>
-    </div>
-
-    {/* Palette */}
-    <div className="mt-10 text-center">
-      <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">Palette</p>
-
-      {/* 5 swatches, perfectly centered; nudge slightly right on md+ */}
-      <div className="mt-4 mx-auto w-full md:w-fit md:translate-x-4">
-        <div className="grid grid-cols-5 gap-6 place-items-center">
-          {[
-            { src: '/green.png',  label: 'Sage Green' },
-            { src: '/yellow.png', label: 'Soft Yellow' },
-            { src: '/purple.png', label: 'Lavender' },
-            { src: '/beige.png',  label: 'Neutral Beige' },
-            { src: '/brown.png',  label: 'Warm Brown' },
-          ].map((c) => (
-            <div key={c.label} className="text-center">
-              <div className="relative h-12 w-12 overflow-hidden rounded-full ring-1 ring-black/10">
-                <Image src={c.src} alt={c.label} fill className="object-cover" />
-              </div>
-              <span className="mt-2 block text-xs text-[#3e3a37]">{c.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Note under palette */}
-      <div className="max-w-3xl mx-auto mt-8 space-y-3 text-sm md:text-base text-[#3e3a37] text-center">
-        <h3 className="font-semibold">Guests’ Attire</h3>
-        <p><strong>Formal.</strong> We kindly invite our guests to dress in their finest.</p>
-        <p>
-          <strong>Gentlemen</strong> may choose a suit or dress shirt with dress pants —
-          jackets and ties are optional.
-        </p>
-        <p>
-          <strong>Ladies</strong> are encouraged to wear floor-length gowns or jumpsuits —
-          satin, chiffon, tulle, ruffles, and floral prints with the assigned colours are welcome!
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-    </FadeInSection>
 
       
     

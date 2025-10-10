@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "set:admins": "node --env-file=.env.local scripts/set-admin-passwords.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
-    "next": "15.3.3",
+    "next": "^15.5.4",
     "oracledb": "^6.8.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -22,7 +24,7 @@
     "@types/node": "24.3.3",
     "@types/react": "19.1.13",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
+    "eslint-config-next": "^15.5.4",
     "tailwindcss": "^4"
   }
 }
