@@ -243,19 +243,19 @@ if (lockErr) {
     <main className="bg-[#c3c7b3]">
 
      <header className="fixed inset-x-0 top-0 z-50">
-    {/* Slim nav strip */}
-    <nav className="bg-[#c3c7b3]">
-      <div className="max-w-6xl mx-auto px-3 sm:px-5 md:px-6">
-        <ul
-          className="
-            flex items-center justify-center
-            gap-3 sm:gap-5 md:gap-10
-            text-[10px] sm:text-xs md:text-sm
-            leading-none uppercase
-            tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.25em]
-            text-[#000000]
-          "
-        >
+  {/* Slim nav strip */}
+  <nav className="bg-[#c3c7b3]">
+    <div className="max-w-6xl mx-auto px-3 sm:px-5 md:px-6">
+      <ul
+        className="
+          flex flex-wrap items-center justify-center
+          gap-2 sm:gap-4 md:gap-8
+          text-[10px] sm:text-xs md:text-sm
+          leading-none uppercase
+          tracking-[0.06em] sm:tracking-[0.14em] md:tracking-[0.18em]
+          text-[#000000]
+        "
+      >
           <li><a href="#home"     className="inline-block py-2 md:py-3 hover:opacity-70">Home</a></li>
           <li><a href="#about"    className="inline-block py-2 md:py-3 hover:opacity-70">About</a></li>
           <li><a href="#gallery"    className="inline-block py-2 md:py-3 hover:opacity-70">Gallery</a></li>
