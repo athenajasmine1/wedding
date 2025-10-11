@@ -242,103 +242,95 @@ if (lockErr) {
   return (
     <main className="bg-[#c3c7b3]">
 
-      <header className="fixed inset-x-0 top-0 z-50">
-      
- 
+     <header className="fixed inset-x-0 top-0 z-50">
+    {/* Slim nav strip */}
+    <nav className="bg-[#c3c7b3]">
+      <div className="max-w-6xl mx-auto px-3 sm:px-5 md:px-6">
+        <ul
+          className="
+            flex items-center justify-center
+            gap-3 sm:gap-5 md:gap-10
+            text-[10px] sm:text-xs md:text-sm
+            leading-none uppercase
+            tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.25em]
+            text-[#000000]
+          "
+        >
+          <li><a href="#home"     className="inline-block py-2 md:py-3 hover:opacity-70">Home</a></li>
+          <li><a href="#about"    className="inline-block py-2 md:py-3 hover:opacity-70">About</a></li>
+          <li><a href="#gallery"    className="inline-block py-2 md:py-3 hover:opacity-70">Gallery</a></li>
+          <li><a href="#timeline" className="inline-block py-2 md:py-3 hover:opacity-70">Timeline</a></li>
+          <li><a href="#wedding"  className="inline-block py-2 md:py-3 hover:opacity-70">Wedding</a></li>
+          <li><a href="#rsvp"     className="inline-block py-2 md:py-3 hover:opacity-70">RSVP</a></li>
+          <li><a href="#contact"  className="inline-block py-2 md:py-3 hover:opacity-70">Contacts</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
 
-      {/* Slim nav strip (fully transparent) */}
-      <nav className="bg-[#c3c7b3]">
-        <div className="max-w-6xl mx-auto px-6">
-          <ul className="flex items-center justify-center gap-6 md:gap-10 text-sm uppercase tracking-[0.25em] text-[#000000]">
-            <li><a href="#home" className="inline-block py-3 hover:opacity-70">Home</a></li>
-            <li><a href="#about" className="inline-block py-3 hover:opacity-70">About</a></li>
-            <li><a href="#timeline" className="inline-block py-3 hover:opacity-70">Timeline</a></li>
-            <li><a href="#wedding" className="inline-block py-3 hover:opacity-70">Wedding</a></li>
-             <li><a href="#rsvp" className="inline-block py-3 hover:opacity-70">RSVP</a></li>
-            <li><a href="#contact" className="inline-block py-3 hover:opacity-70">Contacts</a></li>
-          </ul>
-        </div>
-      </nav>
-    </header>
+  <FadeInSection>
+    <section
+      id="home"
+      /* shorter top-padding on phones since the header is smaller */
+      className="relative w-full h-[100svh] pt-12 sm:pt-14 md:pt-24"
+    >
+      <div className="absolute inset-0 -z-10" aria-hidden="true">
+        <Image
+          src="/about3.jpg"
+          alt=""
+          fill
+          className="object-cover object-center"
+          priority
+        />
+      </div>
 
-    
-      
-     <FadeInSection>
-  <section
-  id="home"
-  className="relative w-full h-[100svh] pt-16 md:pt-24"
->
-  <div className="absolute inset-0 -z-10" aria-hidden="true">
-    <Image
-      src="/about3.jpg"
-      alt=""
-      fill
-      className="object-cover object-center"
-      priority
-    />
-  </div>
+      {/* HERO TEXT */}
+      <div
+        className="
+          absolute left-1/2 -translate-x-1/2 z-10
+          top-[18vh] sm:top-[20vh] md:top-[24vh] lg:top-[26vh]
+          w-[min(92vw,1000px)] px-4 text-center
+        "
+      >
+        <h1
+          className="font-great-vibes drop-shadow-md leading-tight"
+          style={{ color: '#777f59', fontSize: 'clamp(2.4rem, 7.2vw, 6rem)' }}
+        >
+          John & Kristen
+        </h1>
 
+        <p
+          className="mt-2 font-spectral italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)]"
+          style={{ color: '#777f59', fontSize: 'clamp(1rem, 2.2vw, 1.8rem)' }}
+        >
+          are getting married!
+        </p>
 
-    {/* HERO TEXT — positioned in the box you marked */}
-<div
-  className="
-    absolute left-1/2 -translate-x-1/2 z-10
-    top-[22vh] md:top-[24vh] lg:top-[26vh]
-    w-[min(92vw,1000px)] px-4 text-center
-  "
->
-  <h1
-    className="font-great-vibes drop-shadow-md leading-tight"
-    style={{
-      color: "#ccd2bf",
-      fontSize: "clamp(2.8rem, 7.2vw, 6rem)",
-    }}
-  >
-    John & Kristen
-  </h1>
-
-  <p
-    className="mt-2 font-spectral italic [text-shadow:_0_2px_6px_rgba(0,0,0,.35)]"
-    style={{
-      color: "#ccd2bf",
-      fontSize: "clamp(1.1rem, 2.2vw, 1.8rem)",
-    }}
-  >
-    are getting married!
-  </p>
-
-  <p
-    className="mt-3 tracking-[0.32em] text-[0.7rem] md:text-sm"
-    style={{ color: "#ccd2bf" }}
-  >
-    APRIL 25, 2026
-  </p>
-</div>
-
-
-
-
-    
-  </section>
+        <p
+          className="mt-3 tracking-[0.26em] sm:tracking-[0.3em] md:tracking-[0.32em] text-[0.65rem] sm:text-[0.72rem] md:text-sm"
+          style={{ color: '#777f59' }}
+        >
+          APRIL 25, 2026
+        </p>
+      </div>
+    </section>
 </FadeInSection>
 
 
       <Countdown />
 
-    {/* Love Story */}
+   {/* Love Story */}
 <FadeInSection>
   <section id="about" className="bg-[#ccd2bf]">
     <div className="mx-auto max-w-6xl px-6 py-16">
-
       {/* Heading */}
       <h2 className="font-great-vibes text-4xl md:text-5xl mb-6 md:mb-8">
         This is our love story
       </h2>
 
-      {/* Grid: 12 columns, two rows */}
+      {/* Grid (row 1): copy left, image right */}
       <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-start">
-
-        {/* --- Row 1: copy (left) --- */}
+        {/* Left copy */}
         <div className="md:col-span-6 space-y-5 leading-7 text-[#2f2d2b]">
           <p>
             If you ask John, he’ll say he saw Kristen first. But technically, Kristen
@@ -356,7 +348,7 @@ if (lockErr) {
           </p>
         </div>
 
-        {/* --- Row 1: image (right) --- */}
+        {/* Right image */}
         <figure className="md:col-start-7 md:col-end-13">
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-black/5 shadow">
             <Image
@@ -369,38 +361,49 @@ if (lockErr) {
             />
           </div>
         </figure>
+      </div>
 
-        {/* --- Row 2: drawing (left) --- */}
-        <figure className="md:col-span-5">
-  <div className="relative w-full max-w-[14rem] sm:max-w-[16rem] md:max-w-[18rem] mx-auto">
-    <Image
-      src="/wedding_transparent.png"
-      alt="Wedding illustration"
-      width={500}
-      height={400}
-      sizes="(max-width: 640px) 14rem, (max-width: 768px) 16rem, 18rem"
-      className="w-full h-auto object-contain"
-      priority
-    />
-  </div>
-</figure>
+      {/* Row 2 — image (left, red-box size) + paragraph (right, green area) */}
+      <div className="md:col-start-1 md:col-end-13 mt-10">
+        <div className="md:flex md:items-start md:gap-6">
+          {/* Image (match red-box feel & rounded/ring/shadow) */}
+          <div
+            className="
+              relative shrink-0
+              w-[340px] h-[210px]
+              md:w-[360px] md:h-[230px]
+              rounded-2xl overflow-hidden ring-1 ring-black/5 shadow
+              mb-4 md:mb-0
+            "
+          >
+            <Image
+              src="/about.jpg"
+              alt="Our moment"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
 
-
-        {/* --- Row 2: closing paragraph (right) --- */}
-        <div className="md:col-span-7 leading-7 text-[#2f2d2b]">
-          <p>
-            They quickly realized how much they had in common — both the eldest in their
-            families, volunteering at the same place, and sharing a strong desire to grow
-            deeper in their faith. Not long after, John invited Kristen out for coffee —
-            though in truth, he wanted more time together, so their first official date
-            ended up being at Kinjo. The date went well, to say the least. What started
-            as one meal has turned into countless more, and soon, a lifetime of them together.
-          </p>
+          {/* Text (green area) */}
+          <div className="flex-1">
+            <p className="leading-7 text-[#2f2d2b]">
+              They quickly realized how much they had in common — both the eldest in their
+              families, volunteering at the same place, and sharing a strong desire to grow
+              deeper in their faith. Not long after, John invited Kristen out for coffee —
+              though in truth, he wanted more time together, so their first official date
+              ended up being at Kinjo. The date went well, to say the least. What started
+              as one meal has turned into countless more, and soon, a lifetime of them
+              together.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 </FadeInSection>
+
+
 
 
       {/* Love Story — Row 2 (alternate layout) */}
@@ -992,71 +995,84 @@ if (lockErr) {
     
 
       <FadeInSection>
-      <section id="contact" className="bg-[#c3cdbe] py-16 md:py-24">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid gap-10 md:gap-14 md:grid-cols-3 items-center text-[#3e3a37]">
-          {/* Left: John */}
-          <div className="text-center md:text-right space-y-2">
-            <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-[#8a7566]">
-              Contact
-            </p>
-            <h3 className="text-2xl font-serif">John</h3>
-            <p className="text-sm">
-              <span className="font-medium">Number: </span>
-              <a href="tel:15878996309" className="underline decoration-dotted hover:opacity-80">
-                587&nbsp;899&nbsp;6309
-              </a>
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Email: </span>
-              <a
-                href="mailto:johnandkristen.deleon@gmail.com"
-                className="underline decoration-dotted hover:opacity-80 break-all"
-              >
-                johnandkristen.deleon@gmail.com
-              </a>
-            </p>
-          </div>
+  <section id="contact" className="bg-[#c3cdbe] py-16 md:py-24">
+    <div className="max-w-6xl mx-auto px-6">
 
-          {/* Center: circular image */}
-          <div className="flex justify-center">
-            <div className="relative w-48 h-48 md:w-64 md:h-64">
-              <Image
-                src="/LOL.jpg"
-                alt="John & Kristen"
-                fill
-                className="rounded-full object-cover ring-4 ring-[#d8cfc6] shadow-xl"
-                priority
-              />
-            </div>
-          </div>
+      {/* Section heading — same style as "Hotels" */}
+      <div className="text-center mb-10 md:mb-14">
+        <h2 className="font-great-vibes text-4xl md:text-5xl text-[#3e3a37] leading-tight">
+          Contact
+        </h2>
+      </div>
 
-          {/* Right: Kristen */}
-          <div className="text-center md:text-left space-y-2">
-            <p className="tracking-[0.25em] text-[11px] md:text-xs uppercase text-transparent select-none">
-              Contact
-            </p>
-            <h3 className="text-2xl font-serif">Kristen</h3>
-            <p className="text-sm">
-              <span className="font-medium">Number: </span>
-              <a href="tel:14036136976" className="underline decoration-dotted hover:opacity-80">
-                403&nbsp;613&nbsp;6976
-              </a>
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Email: </span>
-              <a
-                href="mailto:johnandkristen.deleon@gmail.com"
-                className="underline decoration-dotted hover:opacity-80 break-all"
-              >
-                johnandkristen.deleon@gmail.com
-              </a>
-            </p>
+      <div className="grid gap-10 md:gap-14 md:grid-cols-3 items-center text-[#3e3a37]">
+        {/* Left: John */}
+        <div className="text-center md:text-right space-y-2">
+          <h3 className="text-2xl font-serif">John</h3>
+          <p className="text-sm">
+            <span className="font-medium">Number: </span>
+            <a
+              href="tel:15878996309"
+              className="underline decoration-dotted hover:opacity-80"
+              aria-label="Call John at 587 899 6309"
+            >
+              587&nbsp;899&nbsp;6309
+            </a>
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">Email: </span>
+            <a
+              href="mailto:johnandkristen.deleon@gmail.com"
+              className="underline decoration-dotted hover:opacity-80 whitespace-nowrap sm:whitespace-normal"
+
+            >
+              johnandkristen.deleon@gmail.com
+            </a>
+          </p>
+        </div>
+
+        {/* Center: circular image */}
+        <div className="flex justify-center">
+          <div className="relative w-48 h-48 md:w-64 md:h-64">
+            <Image
+              src="/LOL.jpg"
+              alt="John & Kristen"
+              fill
+              className="rounded-full object-cover ring-4 ring-[#d8cfc6] shadow-xl"
+              priority
+            />
           </div>
         </div>
+
+        {/* Right: Kristen */}
+        <div className="text-center md:text-left space-y-2">
+          <h3 className="text-2xl font-serif">Kristen</h3>
+          <p className="text-sm">
+            <span className="font-medium">Number: </span>
+            <a
+              href="tel:14036136976"
+              className="underline decoration-dotted hover:opacity-80"
+              aria-label="Call Kristen at 403 613 6976"
+            >
+              403&nbsp;613&nbsp;6976
+            </a>
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">Email: </span>
+            <a
+              href="mailto:johnandkristen.deleon@gmail.com"
+              className="underline decoration-dotted hover:opacity-80 whitespace-nowrap sm:whitespace-normal"
+
+            >
+              johnandkristen.deleon@gmail.com
+            </a>
+          </p>
+        </div>
       </div>
-    </section>
-      </FadeInSection>
+    </div>
+  </section>
+</FadeInSection>
+
     </main>
   );
 }
