@@ -5,11 +5,30 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import FadeInSection from "../components/FadeInSection";
 import Countdown from "../components/Countdown";
-import { supabase } from "../lib/supabase";
+
+// ✅ use the browser client in a client component
+import { createBrowserClient } from "../lib/supabase/browser-client";
+const supabase = createBrowserClient();
+console.log("ENV check", {
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  hasAnon: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+});
 
 
 export default function Home() {
   const router = useRouter();
+  useEffect(() => {
+  (async () => {
+    const { data, error } = await supabase.from("guests").select("id").limit(1);
+    console.log("Supabase probe:", { ok: !error, rows: data?.length ?? 0, error });
+  })();
+}, []);
+  
+  
+
+
+
+
 
   // Sticky header style
   const [scrolled, setScrolled] = useState(false);
@@ -49,97 +68,85 @@ export default function Home() {
   }
 
   // Read current First/Last from the form and trigger lookup once both have values
-  function syncGroupFromForm(form) {
-    const first = form?.firstName?.value?.trim() || "";
-    const last = form?.lastName?.value?.trim() || "";
-    if (first && last) handleNameChange(first, last);
-  }
+  async function syncGroupFromForm(form) {
+  const first = form?.firstName?.value?.trim() || "";
+  const last  = form?.lastName?.value?.trim()  || "";
+  if (!first || !last) return null;
+  return await handleNameChange(first, last);
+}
 
   // 1) Find guest -> group_ID
   // 2) Load ONLY members with SAME group_ID
   // 3) Pre-check members already RSVP'd attending=true
   async function handleNameChange(first, last) {
-    const { data: me, error: e1 } = await supabase
-      .from("guests")
-      .select("first_name,last_name,group_ID")
-      .ilike("first_name", first)
-      .ilike("last_name", last)
-      .maybeSingle();
-
-    if (e1 || !me?.group_ID) {
-      setShowFamily(false);
-      setGroupId("");
-      setFamily([]);
-      setSelected({});
-      return;
-    }
-
-    const gid = me.group_ID;
-    setGroupId(gid);
-
-    const { data: fam, error: e2 } = await supabase
-      .from("guests")
-      .select("first_name,last_name")
-      .eq("group_ID", gid)
-      .order("last_name", { ascending: true })
-      .order("first_name", { ascending: true });
-
-    if (e2) {
-      setShowFamily(false);
-      return;
-    }
-
-    const { data: rs } = await supabase
-      .from("rsvps")
-      .select("first_name,last_name,attending")
-      .eq("group_ID", gid);
-
-    const attendingSet = new Set(
-      (rs || [])
-        .filter((r) => r.attending === true)
-        .map((r) => `${r.first_name} ${r.last_name}`.toLowerCase())
-    );
-
-    const initial = Object.fromEntries(
-      (fam || []).map((p) => {
-        const full = `${p.first_name} ${p.last_name}`;
-        const isSelf =
-          p.first_name.toLowerCase() === first.toLowerCase() &&
-          p.last_name.toLowerCase() === last.toLowerCase();
-        return [full, isSelf || attendingSet.has(full.toLowerCase())];
-      })
-    );
-
-    setFamily(fam || []);
-    setSelected(initial);
-    setShowFamily(true);
+  const f = (first || "").trim();
+  const l = (last  || "").trim();
+  if (!f || !l) {
+    setShowFamily(false); setGroupId(""); setFamily([]); setSelected({});
+    return null;
   }
 
-  // Save SAME-group selections into rsvps
-  async function upsertFamilySelections() {
-    if (!groupId || !family.length) {
-      throw new Error(
-        "No family/group loaded yet. Type your first + last name, then click outside the field."
-      );
-    }
-    const rows = family.map((p) => {
+  // 1) find me
+  const { data: meRows, error: e1 } = await supabase
+    .from("guests")
+    .select("first_name,last_name,group_id")
+    .ilike("first_name", f)
+    .ilike("last_name",  l)
+    .limit(1);
+
+  console.log("lookup me →", { e1, meRows });
+  if (e1 || !meRows?.length || !meRows[0]?.group_id) {
+    setShowFamily(false); setGroupId(""); setFamily([]); setSelected({});
+    return null;
+  }
+
+  const gid = meRows[0].group_id;
+  setGroupId(gid);
+
+  const { data: fam, error: e2 } = await supabase
+    .from("guests")
+    .select("first_name,last_name")
+    .eq("group_id", gid)                       // <- snake_case
+    .order("last_name",  { ascending: true })
+    .order("first_name", { ascending: true });
+
+  if (e2 || !fam?.length) {
+    setShowFamily(false); setFamily([]); setSelected({});
+    return null;
+  }
+
+  // 3) pre-check attending for this group
+const { data: rs, error: e3 } = await supabase
+  .from("rsvps")
+  .select("first_name,last_name,attending")
+  .eq("group_id", gid);
+
+    if (e3) console.warn("rsvps precheck error:", e3);
+
+  const attendingSet = new Set(
+    (rs || [])
+      .filter(r => r.attending === true)
+      .map(r => `${r.first_name} ${r.last_name}`.toLowerCase())
+  );
+
+  const initial = Object.fromEntries(
+    fam.map(p => {
       const full = `${p.first_name} ${p.last_name}`;
-      const isAttending = !!selected[full];
-      return {
-        first_name: p.first_name,
-        last_name: p.last_name,
-        group_ID: groupId,
-        attending: isAttending,
-        guests: isAttending ? 1 : 0,
-      };
-    });
+      const isSelf =
+        p.first_name.toLowerCase() === f.toLowerCase() &&
+        p.last_name.toLowerCase()  === l.toLowerCase();
+      return [full, isSelf || attendingSet.has(full.toLowerCase())];
+    })
+  );
 
-   const { error: lockErr } = await supabase
-  .from('group_locks')
-  .insert({ group_ID: groupId });
-if (lockErr) console.warn('group_locks insert error:', lockErr);
+  setFamily(fam);
+  setSelected(initial);
+  setShowFamily(true);
 
-  }
+  return { gid, fam };
+}
+
+
 
   // helper used below (keep it if you show the family grid)
 async function upsertFamilySelections() {
@@ -150,82 +157,80 @@ async function upsertFamilySelections() {
     return {
       first_name: p.first_name,
       last_name:  p.last_name,
-      group_ID:   groupId,
+       group_id:   groupId, 
       attending:  !!selected[full],
       guests:     selected[full] ? 1 : 0,
     };
   });
 
-  const { error } = await supabase
-    .from("rsvps")
-    .upsert(rows, { onConflict: "first_name,last_name,group_ID", returning: "minimal" });
-
-  if (error) throw error;
+ const { error } = await supabase.from("rsvps").insert(row);
+    // ignore unique-duplicate errors (23505), throw others
+    if (error && error.code !== "23505") throw error;
 }
 
 // MAIN submit handler — exactly one function, not nested
 const handleRsvpSubmit = async (e) => {
   e.preventDefault();
   const form = e.currentTarget;
-  if (!(form instanceof HTMLFormElement)) {
-    alert("Form element not found.");
+
+  // Force a lookup even if the user didn't blur
+  const found  = await syncGroupFromForm(form);
+  const gidNow = found?.gid ?? groupId;
+  if (!gidNow || !family.length) {
+    alert("We couldn’t find your name/group. Type First + Last (no middle), then click outside the field.");
     return;
   }
+  // keep state aligned, just in case
+  if (groupId !== gidNow) setGroupId(gidNow);
 
   setSubmitting(true);
   try {
-    // Optional: block if group already locked
-    if (groupId) {
-      const { data: lockRow, error: lockErr } = await supabase
-  .from('group_locks')
-  .insert({ group_ID: groupId })
-  .select()
-  .single();  // ✅ no .catch()
-
-if (lockErr) {
-  // handle or ignore specific errors (e.g., duplicate insert)
-  console.warn('group_locks insert error:', lockErr);
-}
-
-    }
+    // idempotent lock (OK if duplicate)
+    await supabase
+      .from("group_locks")
+      .insert({ group_id: gidNow })
+      .select()
+      .single()
+      .catch(() => {});
 
     const fd = new FormData(form);
     const payload = {
       firstName: String(fd.get("firstName") || ""),
-      lastName:  String(fd.get("lastName") || ""),
-      email:     String(fd.get("email") || ""),
-      phone:     String(fd.get("phone") || ""),
+      lastName:  String(fd.get("lastName")  || ""),
+      email:     String(fd.get("email")     || ""),
+      phone:     String(fd.get("phone")     || ""),
       attending: String(fd.get("attending") || "yes") === "yes",
-      guests:    Number(fd.get("guests") || selectedCount || 1),
-      diet:      String(fd.get("diet") || ""),
-      message:   String(fd.get("message") || ""),
-      groupId,
-      selectedList: Object.keys(selected).filter((k) => !!selected[k]),
+      guests:    Number(fd.get("guests")    || selectedCount || 1),
+      diet:      String(fd.get("diet")      || ""),
+      message:   String(fd.get("message")   || ""),
+      groupId:   gidNow, // API maps this to group_id
+      selectedList: Object.keys(selected).filter(k => !!selected[k]),
     };
 
-    // Call your API (sends emails + inserts single row)
-    const res  = await fetch("/api/rsvp", {
+    // send to API (ok if it returns non-200; we still upsert per-member)
+    const resp = await fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) console.warn("RSVP API error:", json?.error || res.statusText);
-
-    // Save family selections (if you show that grid)
-    await upsertFamilySelections();
-
-    // Optionally mark the whole group as locked
-    if (groupId) {
-      await supabase
-        .from("group_locks")
-        .insert({ group_ID: groupId })
-        .select()
-        .single()
-      
+    try {
+      const body = await resp.json();
+      if (!resp.ok) console.warn("RSVP API error:", body?.error || resp.statusText);
+    } catch {
+      /* ignore body parse errors */
     }
 
-    // Redirect
+    // write per-member rows; ignores duplicates (23505)
+    await upsertFamilySelections();
+
+    // optional second lock (also idempotent)
+    await supabase
+      .from("group_locks")
+      .insert({ group_id: gidNow })
+      .select()
+      .single()
+      .catch(() => {});
+
     router.replace(
       `/thank-you?firstName=${encodeURIComponent(payload.firstName)}&lastName=${encodeURIComponent(payload.lastName)}`
     );
@@ -812,9 +817,11 @@ if (lockErr) {
             <label htmlFor="firstName" className="text-xs uppercase tracking-widest mb-2">First name</label>
             <input
               id="firstName" name="firstName" type="text" required
+               onChange={(e) => syncGroupFromForm(e.currentTarget.form)}
               pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’-]+$" title="First name only (no middle names)."
               className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
               placeholder="e.g., Jasmine"
+              
               onBlur={(e) => { e.currentTarget.value = e.currentTarget.value.trim().replace(/\s+/g, ''); syncGroupFromForm(e.currentTarget.form); }}
             />
           </div>
@@ -822,6 +829,7 @@ if (lockErr) {
             <label htmlFor="lastName" className="text-xs uppercase tracking-widest mb-2">Last name</label>
             <input
               id="lastName" name="lastName" type="text" required
+               onChange={(e) => syncGroupFromForm(e.currentTarget.form)}
               pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’ -]+$" title="Last name only (e.g., De Leon)."
               className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
               placeholder="e.g., De Leon"

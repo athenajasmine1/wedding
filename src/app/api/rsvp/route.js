@@ -41,7 +41,8 @@ export async function POST(req) {
       guests    : Number(payload.guests ?? payload.guestsCount ?? 1),
       diet      : payload.diet ?? null,
       message   : payload.message ?? null,
-      group_ID  : payload.groupId ?? null,
+      group_id  : payload.groupId ?? null,
+
     };
 
     // 1) Save to Supabase
@@ -68,7 +69,7 @@ export async function POST(req) {
     const userHtml = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
         <h2>Thank you, ${record.first_name}!</h2>
-        <p>We’ve received your RSVP${record.group_ID ? ` for group <strong>${record.group_ID}</strong>` : ""}.</p>
+        <p>We’ve received your RSVP${record.group_id ? ` for group <strong>${record.group_id}</strong>` : ""}.
         <table style="margin-top:8px">
           <tr><td><strong>Name:</strong></td><td>${record.first_name} ${record.last_name}</td></tr>
           <tr><td><strong>Attending:</strong></td><td>${record.attending ? "Yes" : "No"}</td></tr>
@@ -83,14 +84,14 @@ export async function POST(req) {
       </div>
     `;
     const userText =
-      `Thanks ${record.first_name}! We received your RSVP${record.group_ID ? ` for group ${record.group_ID}` : ""}.\n` +
+      `Thanks ${record.first_name}! We received your RSVP${record.group_id ? ` for group ${record.group_id}` : ""}.\n`
       `Attending: ${record.attending ? "Yes" : "No"}\n` +
       `Guests (incl. you): ${record.guests}\n` +
       (record.diet ? `Dietary: ${record.diet}\n` : "") +
       (record.message ? `Message: ${record.message}\n` : "") +
       `Family: ${(payload.selectedList || []).join(", ") || "None"}\n— John & Kristen`;
 
-    const adminSubject = `New RSVP — ${record.first_name} ${record.last_name}${record.group_ID ? ` (${record.group_ID})` : ""}`;
+    const adminSubject = `New RSVP — ${record.first_name} ${record.last_name}${record.group_id ? ` (${record.group_id})` : ""}`;
     const adminHtml = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
         <h3>New RSVP</h3>
@@ -98,7 +99,7 @@ export async function POST(req) {
           <tr><td><strong>Name:</strong></td><td>${record.first_name} ${record.last_name}</td></tr>
           <tr><td><strong>Email:</strong></td><td>${record.email}</td></tr>
           ${record.phone ? `<tr><td><strong>Phone:</strong></td><td>${record.phone}</td></tr>` : ""}
-          ${record.group_ID ? `<tr><td><strong>Group:</strong></td><td>${record.group_ID}</td></tr>` : ""}
+          ${record.group_id ? `<tr><td><strong>Group:</strong></td><td>${record.group_id}</td></tr>` : ""}
           <tr><td><strong>Attending:</strong></td><td>${record.attending ? "Yes" : "No"}</td></tr>
           <tr><td><strong>Guests (incl. them):</strong></td><td>${record.guests}</td></tr>
           ${record.diet ? `<tr><td><strong>Dietary:</strong></td><td>${record.diet}</td></tr>` : ""}
@@ -112,7 +113,7 @@ export async function POST(req) {
     const adminText =
       `New RSVP\nName: ${record.first_name} ${record.last_name}\nEmail: ${record.email}` +
       (record.phone ? `\nPhone: ${record.phone}` : "") +
-      (record.group_ID ? `\nGroup: ${record.group_ID}` : "") +
+      (record.group_id ? `\nGroup: ${record.group_id}` : "") +
       `\nAttending: ${record.attending ? "Yes" : "No"}\nGuests: ${record.guests}` +
       (record.diet ? `\nDietary: ${record.diet}` : "") +
       (record.message ? `\nMessage: ${record.message}` : "") +
