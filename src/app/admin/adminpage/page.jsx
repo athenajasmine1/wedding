@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from "../../../lib/supabase";
+
+// ✅ use the browser client only in client components
+import { createBrowserClient } from '../../../lib/supabase/browser-client';
+const supabase = createBrowserClient();
 
 const CAPACITY = 221; // adjust if needed
 

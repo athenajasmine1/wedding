@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabase';
+
+// ✅ correct relative path from /src/app/admin/login/page.jsx
+import { createBrowserClient } from '../../../lib/supabase/browser-client';
+const supabase = createBrowserClient();
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');

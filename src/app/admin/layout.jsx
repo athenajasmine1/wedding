@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { supabase } from "../../lib/supabase";
+
+// ✅ use the browser client in client components
+import { createBrowserClient } from '../../lib/supabase/browser-client';
+const supabase = createBrowserClient();
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
