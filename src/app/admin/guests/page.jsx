@@ -1,115 +1,108 @@
 'use client';
+
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from "../../../lib/supabase";
+// ⬇️ correct relative path from src/app/admin/guests/page.jsx -> src/lib/supabase/index.ts
+import { createBrowserClient } from '../../../lib/supabase/browser-client';
+const supabase = createBrowserClient();
 
 export default function GuestsPage() {
   const [rsvps, setRsvps] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // NEW: local UI state
-  const [q, setQ] = useState('');            // search query
-  const [group, setGroup] = useState('');    // selected group
+  // filters
+  const [q, setQ] = useState('');
+  const [group, setGroup] = useState('');
 
-  // Load RSVPs from Supabase
+  // initial load
   useEffect(() => {
+    let mounted = true;
     (async () => {
       const { data, error } = await supabase
         .from('rsvps')
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (!mounted) return;
       if (error) console.error(error);
       setRsvps(data || []);
       setLoading(false);
     })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+  // realtime
   useEffect(() => {
     const channel = supabase
       .channel('rsvps-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rsvps' }, (payload) => {
         setRsvps((prev) => {
-          const row = payload.new ?? payload.old;
           if (payload.eventType === 'INSERT') {
+            const row = payload.new;
             if (prev.some((r) => r.id === row.id)) return prev;
             return [row, ...prev];
           }
           if (payload.eventType === 'UPDATE') {
-            return prev.map((r) => (r.id === row.id ? { ...r, ...payload.new } : r));
+            const row = payload.new;
+            return prev.map((r) => (r.id === row.id ? { ...r, ...row } : r));
           }
           if (payload.eventType === 'DELETE') {
-            const removed = payload.old; // deleted row
-            return prev.filter(r => r.id === undefined ? true : r.id !== removed.id);
+            const row = payload.old;
+            return prev.filter((r) => r.id !== row.id);
           }
           return prev;
         });
       })
       .subscribe();
-    return () => supabase.removeChannel(channel);
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-
-  // Toggle attending (Block / Allow)
+  // actions
   async function handleToggleAttending(id, nextValue) {
     const { data, error } = await supabase
       .from('rsvps')
       .update({ attending: nextValue })
-      .eq('id', id)
+      .eq('id', Number(id))
       .select()
       .single();
 
     if (error) {
       alert(error.message);
-      setRsvps((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)));
-  
+      return;
     }
-
-    const stats = useMemo(() => {
-    const total = rsvps.length;
-    const yes = rsvps.filter((r) => r.attending).length;
-    const headcount = rsvps.reduce((s, r) => s + (r.attending ? (r.guests ?? 1) : 0), 0);
-    return { total, yes, headcount };
-  }, [rsvps]);
-
-  if (loading) return <p className="p-6 text-gray-500">Loading…</p>;
-
-    setRsvps((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, ...data } : row))
-    );
+    setRsvps((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)));
   }
 
   async function handleDelete(id) {
-  if (!confirm('Delete this RSVP? This cannot be undone.')) return;
+    if (!confirm('Delete this RSVP? This cannot be undone.')) return;
 
-  const { error } = await supabase
-    .from('rsvps')
-    .delete()
-    .eq('id', numericId); // delete by PK
-
-  if (error) {
-    console.error('Delete failed:', error);
-    alert(`Delete failed: ${error.message}`);
-    return;
+    const { error } = await supabase.from('rsvps').delete().eq('id', Number(id));
+    if (error) {
+      console.error('Delete failed:', error);
+      alert(`Delete failed: ${error.message}`);
+      return;
+    }
+    setRsvps((prev) => prev.filter((r) => r.id !== id));
   }
 
-  // remove from local state (Realtime will also drop it if you subscribed)
-  setRsvps(prev => prev.filter(r => r.id !== numericId));
-}
-
-
-  // NEW: all distinct groups (supports group_ID or group_id, whichever your rows use)
+  // group list
   const groups = useMemo(() => {
-    const getG = (r) => r.group_ID ?? r.group_id ?? '';
+    const getG = (r) => r.group_id ?? r.group_ID ?? '';
     return Array.from(new Set(rsvps.map(getG).filter(Boolean))).sort();
   }, [rsvps]);
 
-  // NEW: filtered list based on search + group
+  // filtering
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const getG = (r) => (r.group_ID ?? r.group_id ?? '').toLowerCase();
+    const groupNeedle = group.trim().toLowerCase();
+    const getG = (r) => (r.group_id ?? r.group_ID ?? '').toLowerCase();
 
     return rsvps.filter((r) => {
-      const matchesGroup = !group || getG(r) === group.toLowerCase();
+      const matchesGroup = !groupNeedle || getG(r) === groupNeedle;
       const matchesSearch =
         !needle ||
         (r.first_name ?? '').toLowerCase().includes(needle) ||
@@ -120,38 +113,74 @@ export default function GuestsPage() {
     });
   }, [rsvps, q, group]);
 
-  // Stats (keep your originals; if you want them to reflect the filter, switch rsvps -> filtered)
+  // stats (overall; use `filtered` instead of `rsvps` if you want filtered stats)
   const stats = useMemo(() => {
     const total = rsvps.length;
-    const yes = rsvps.filter((r) => r.attending).length;
-    const headcount = rsvps.reduce((sum, r) => sum + (r.guests || 0), 0);
+    const yes = rsvps.filter((r) => !!r.attending).length;
+    const headcount = rsvps.reduce((s, r) => s + (r.attending ? Number(r.guests ?? 1) : 0), 0);
     return { total, yes, headcount };
   }, [rsvps]);
 
-  // NEW: CSV export of the currently filtered rows
   function exportCSV() {
     if (!filtered.length) return;
-    const headers = ['first_name','last_name','email','attending','guests','group_ID'];
-    const esc = (v) => (v == null ? '' : String(v).replaceAll('"','""'));
-    const lines = filtered.map(r => ([
-      r.first_name, r.last_name, r.email,
-      r.attending ? 'yes' : (r.attending === false ? 'no' : ''),
-      r.guests ?? 0,
-      r.group_ID ?? r.group_id ?? ''
-    ].map(v => `"${esc(v)}"`).join(',')));
+    const headers = ['first_name', 'last_name', 'email', 'attending', 'guests', 'group_id'];
+    const esc = (v) => (v == null ? '' : String(v).replaceAll('"', '""'));
+    const lines = filtered.map((r) =>
+      [
+        r.first_name,
+        r.last_name,
+        r.email,
+        r.attending ? 'yes' : r.attending === false ? 'no' : '',
+        r.guests ?? 0,
+        r.group_id ?? r.group_ID ?? '',
+      ]
+        .map((v) => `"${esc(v)}"`)
+        .join(',')
+    );
     const csv = `${headers.join(',')}\n${lines.join('\n')}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'rsvps.csv'; a.click();
+    a.href = url;
+    a.download = 'rsvps.csv';
+    a.click();
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <p className="text-center text-gray-500 py-10">Loading…</p>;
+  if (loading) return <p className="p-6 text-gray-500">Loading…</p>;
 
   return (
-    <main className="p-6">
-      {/* summary cards using stats.total, stats.yes, stats.headcount */}
+    <main className="p-6 space-y-4">
+      {/* quick filters */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search name, email, group…"
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <select
+          value={group}
+          onChange={(e) => setGroup(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        >
+          <option value="">All groups</option>
+          {groups.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+        <button onClick={exportCSV} className="border rounded px-3 py-2 text-sm">
+          Export CSV (filtered)
+        </button>
+      </div>
+
+      {/* summary */}
+      <div className="text-sm text-gray-600">
+        Total RSVPs: <b>{stats.total}</b> · Yes: <b>{stats.yes}</b> · Headcount (incl.):{' '}
+        <b>{stats.headcount}</b>
+      </div>
 
       {/* table */}
       <div className="bg-white shadow rounded-2xl overflow-hidden">
@@ -167,38 +196,40 @@ export default function GuestsPage() {
             </tr>
           </thead>
           <tbody>
-            {rsvps.map((r) => (
+            {filtered.map((r) => (
               <tr key={r.id} className="border-t">
-                <td className="px-4 py-2 capitalize">{r.first_name} {r.last_name}</td>
+                <td className="px-4 py-2 capitalize">
+                  {r.first_name} {r.last_name}
+                </td>
                 <td className="px-4 py-2">{r.email ?? ''}</td>
-                <td className="px-4 py-2">{r.group_ID ?? r.group_id ?? ''}</td>
+                <td className="px-4 py-2">{r.group_id ?? r.group_ID ?? ''}</td>
                 <td className="px-4 py-2 text-center">{r.attending ? 'Yes' : 'No'}</td>
                 <td className="px-4 py-2 text-center">{r.guests ?? (r.attending ? 1 : 0)}</td>
                 <td className="px-4 py-2 text-center">
                   <button
-    onClick={() => handleToggleAttending(r.id, !r.attending)}
-    className={`px-3 py-1.5 rounded-lg font-medium transition mr-2 ${
-      r.attending
-        ? 'bg-red-100 text-red-600 hover:bg-red-200'
-        : 'bg-green-100 text-green-600 hover:bg-green-200'
-    }`}
-  >
-    {r.attending ? 'Block' : 'Allow'}
-  </button>
+                    onClick={() => handleToggleAttending(r.id, !r.attending)}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition mr-2 ${
+                      r.attending
+                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                        : 'bg-green-100 text-green-600 hover:bg-green-200'
+                    }`}
+                  >
+                    {r.attending ? 'Block' : 'Allow'}
+                  </button>
 
-  <button
-    onClick={() => handleDelete(r.id)}
-    className="px-3 py-1.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
-  >
-    Delete
-  </button>
+                  <button
+                    onClick={() => handleDelete(r.id)}
+                    className="px-3 py-1.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
-            {rsvps.length === 0 && (
+            {!filtered.length && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
-                  No RSVPs yet.
+                  No results.
                 </td>
               </tr>
             )}

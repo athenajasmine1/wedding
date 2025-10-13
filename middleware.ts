@@ -1,6 +1,6 @@
 // /middleware.ts  (project root)
 import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { updateSession } from "./src/lib/supabase/middleware";
 
 const public_routes = ["/sign-in", "/sign-up"]; // for non-authenticated users
 
