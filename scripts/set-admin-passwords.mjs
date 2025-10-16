@@ -13,14 +13,15 @@ const supabase = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Helper: find a user by email by paging through the list
 async function findUserByEmail(email) {
   let page = 1;
   const perPage = 1000;
   for (;;) {
     const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
     if (error) throw error;
-    const match = data.users.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
+    const match = data.users.find(
+      (u) => (u.email || '').toLowerCase() === email.toLowerCase()
+    );
     if (match) return match;
     if (data.users.length < perPage) return null;
     page += 1;
@@ -28,6 +29,10 @@ async function findUserByEmail(email) {
 }
 
 async function ensureAdmin(email, password) {
+  if (!email || !password) {
+    throw new Error('Missing admin email or password env var');
+  }
+
   const existing = await findUserByEmail(email);
 
   if (existing) {
@@ -52,8 +57,8 @@ async function ensureAdmin(email, password) {
 }
 
 async function run() {
-  await ensureAdmin('jasmineathea.deleon@gmail.com', 'SetA_Strong_Password1!');
-  await ensureAdmin('johnandkristen.deleon@gmail.com', 'SetA_Strong_Password2!');
+  await ensureAdmin(process.env.ADMIN_EMAIL_1, process.env.ADMIN_PASSWORD_1);
+  await ensureAdmin(process.env.ADMIN_EMAIL_2, process.env.ADMIN_PASSWORD_2);
   console.log('Done.');
 }
 
