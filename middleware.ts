@@ -1,34 +1,61 @@
-// /middleware.ts  (project root)
-import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "./src/lib/supabase/middleware";
+// /middleware.ts
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-const public_routes = ["/sign-in", "/sign-up"]; // for non-authenticated users
+export async function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
 
-export function isPublicRoute(request: NextRequest) {
-  return public_routes.includes(request.nextUrl.pathname);
-}
-
-export async function middleware(request: NextRequest) {
-  // update user session if he is authenticated
-
-  const { user, response } = await updateSession(request);
-
-  // if route is not public redirect to /sign-in page
-  if (!isPublicRoute(request) && !user) {
-    const redirectUrl = new URL("/sign-in", request.url);
-    return NextResponse.redirect(redirectUrl.toString());
+  // Allow the login page itself
+  if (pathname.startsWith("/admin/login")) {
+    return NextResponse.next();
   }
-  if (user) {
-    const path = request.nextUrl.pathname;
-    if (public_routes.includes(path)) {
-      return NextResponse.redirect(new URL("/", request.url));
+
+  // Prepare a response we can mutate cookies on
+  const res = NextResponse.next();
+
+  // Create an SSR Supabase client wired to Next cookies
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          res.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          res.cookies.set({ name, value: "", ...options, maxAge: 0 });
+        },
+      },
     }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Not signed in? send to /admin/login with ?redirect=<original path>
+  if (!user) {
+    const login = new URL("/admin/login", req.url);
+    login.searchParams.set("redirect", pathname + (search || ""));
+    return NextResponse.redirect(login);
   }
-  return response;
+
+  // Optional allowlist: only let specific emails in
+  const allow = (process.env.ADMIN_EMAIL || "")
+    .split(",")
+    .map(s => s.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (allow.length && !allow.includes((user.email || "").toLowerCase())) {
+    // Logged in but not an admin → bounce to home (or replace with a 403 page)
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  return res;
 }
 
+// Only protect /admin/*
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/admin/:path*"],
 };

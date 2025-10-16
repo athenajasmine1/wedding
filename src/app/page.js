@@ -249,32 +249,32 @@ const handleRsvpSubmit = async (e) => {
 
      <header className="fixed inset-x-0 top-0 z-50">
   <nav className="bg-[#c3c7b3]">
-    <div className="max-w-6xl mx-auto px-0">
-      {/* horizontally scrollable strip on mobile */}
+    <div className="max-w-6xl mx-auto">
       <div className="overflow-x-auto no-scrollbar">
         <ul
           className="
-            flex items-center whitespace-nowrap
-            gap-4 sm:gap-6 md:gap-10
-            px-3 sm:px-5 md:px-6
-            text-[11px] sm:text-xs md:text-sm
-            leading-none uppercase
-            tracking-[0.08em] sm:tracking-[0.14em] md:tracking-[0.25em]
+            flex items-center justify-center whitespace-nowrap
+            gap-5 sm:gap-7 md:gap-10
+            px-4 md:px-6
+            text-[11px] sm:text-xs md:text-sm leading-none uppercase
+            tracking-[0.12em] md:tracking-[0.2em]
             text-black
           "
         >
-          <li><a href="#home"     className="inline-block py-2 md:py-3 hover:opacity-70">Home</a></li>
-          <li><a href="#about"    className="inline-block py-2 md:py-3 hover:opacity-70">About</a></li>
-          <li><a href="#gallery"  className="inline-block py-2 md:py-3 hover:opacity-70">Gallery</a></li>
-          <li><a href="#timeline" className="inline-block py-2 md:py-3 hover:opacity-70">Timeline</a></li>
-          <li><a href="#wedding"  className="inline-block py-2 md:py-3 hover:opacity-70">Wedding</a></li>
-          <li><a href="#rsvp"     className="inline-block py-2 md:py-3 hover:opacity-70">RSVP</a></li>
-          <li><a href="#contact"  className="inline-block py-2 md:py-3 hover:opacity-70">Contacts</a></li>
+          <li><a href="#home"      className="inline-block px-2 py-2 md:py-3 hover:opacity-70">Home</a></li>
+          <li><a href="#about"     className="inline-block px-2 py-2 md:py-3 hover:opacity-70">About</a></li>
+          <li><a href="#gallery"   className="inline-block px-2 py-2 md:py-3 hover:opacity-70">Gallery</a></li>
+          <li><a href="#timeline"  className="inline-block px-2 py-2 md:py-3 hover:opacity-70">Timeline</a></li>
+          <li><a href="#wedding"   className="inline-block px-2 py-2 md:py-3 hover:opacity-70">Wedding</a></li>
+          <li><a href="#rsvp"      className="inline-block px-2 py-2 md:py-3 hover:opacity-70">RSVP</a></li>
+          {/* make sure your section id is "contacts" to match this link */}
+          <li><a href="#contacts"  className="inline-block px-2 py-2 md:py-3 hover:opacity-70">Contacts</a></li>
         </ul>
       </div>
     </div>
   </nav>
 </header>
+
 
 
   <FadeInSection>

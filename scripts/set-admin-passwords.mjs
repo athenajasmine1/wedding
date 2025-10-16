@@ -3,12 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 
 const url = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 if (!url || !serviceKey) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
   process.exit(1);
 }
 
-const supabase = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+const supabase = createClient(url, serviceKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
 
 // Helper: find a user by email by paging through the list
 async function findUserByEmail(email) {
@@ -17,9 +20,9 @@ async function findUserByEmail(email) {
   for (;;) {
     const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
     if (error) throw error;
-    const match = data.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    const match = data.users.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
     if (match) return match;
-    if (data.users.length < perPage) return null; // no more pages
+    if (data.users.length < perPage) return null;
     page += 1;
   }
 }
@@ -28,7 +31,6 @@ async function ensureAdmin(email, password) {
   const existing = await findUserByEmail(email);
 
   if (existing) {
-    // Update password
     const { data, error } = await supabase.auth.admin.updateUserById(existing.id, {
       password,
       user_metadata: { role: 'admin' },
@@ -38,7 +40,6 @@ async function ensureAdmin(email, password) {
     return data.user;
   }
 
-  // Create user (email confirmed) with password
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
@@ -51,7 +52,6 @@ async function ensureAdmin(email, password) {
 }
 
 async function run() {
-  // <<< EDIT THESE TWO PASSWORDS >>>
   await ensureAdmin('jasmineathea.deleon@gmail.com', 'SetA_Strong_Password1!');
   await ensureAdmin('johnandkristen.deleon@gmail.com', 'SetA_Strong_Password2!');
   console.log('Done.');

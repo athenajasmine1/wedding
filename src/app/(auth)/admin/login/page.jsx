@@ -1,30 +1,43 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // ✅ correct relative path from /src/app/admin/login/page.jsx
-import { createBrowserClient } from '../../../lib/supabase/browser-client';
+import { createBrowserClient } from '../../../../lib/supabase/browser-client';
 const supabase = createBrowserClient();
 
 export default function AdminLogin() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const redirectTo = params.get('redirect') || '/admin/adminpage';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  // If already logged in, skip the form
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) router.replace(redirectTo);
+    })();
+  }, [router, redirectTo]);
 
   async function handleLogin(e) {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    setLoading(false);
     if (error) {
       setError(error.message);
       return;
     }
-
-    // ✅ go straight to your dashboard page
-    router.push('/admin/adminpage')
+    router.push(redirectTo);
   }
 
   return (
@@ -40,6 +53,7 @@ export default function AdminLogin() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          autoComplete="username"
         />
 
         <input
@@ -49,10 +63,15 @@ export default function AdminLogin() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="current-password"
         />
 
-        <button type="submit" className="w-full border rounded p-2 bg-indigo-600 text-white">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full border rounded p-2 bg-indigo-600 text-white disabled:opacity-60"
+        >
+          {loading ? 'Signing in…' : 'Login'}
         </button>
       </form>
     </main>
