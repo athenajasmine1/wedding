@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-// ✅ correct relative path from /src/app/admin/login/page.jsx
 import { createBrowserClient } from '../../../../lib/supabase/browser-client';
+
 const supabase = createBrowserClient();
 
-export default function AdminLogin() {
+/** The inner client component that uses useSearchParams. */
+function LoginForm() {
   const router = useRouter();
-  const params = useSearchParams();
+  const params = useSearchParams();               // <-- allowed now (inside Suspense)
   const redirectTo = params.get('redirect') || '/admin/adminpage';
 
   const [email, setEmail] = useState('');
@@ -41,9 +41,9 @@ export default function AdminLogin() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleLogin} className="p-6 border rounded-xl shadow space-y-4 bg-white/80">
-        <h1 className="text-xl font-semibold">Admin Login</h1>
+    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form onSubmit={handleLogin} className="w-full max-w-md p-6 border rounded-xl shadow bg-white/90 space-y-4">
+        <h1 className="text-2xl font-semibold text-center">Admin Login</h1>
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <input
@@ -75,5 +75,14 @@ export default function AdminLogin() {
         </button>
       </form>
     </main>
+  );
+}
+
+/** Page component wraps LoginForm in Suspense to satisfy Next.js requirement. */
+export default function Page() {
+  return (
+    <Suspense fallback={<main className="min-h-screen flex items-center justify-center">Loading…</main>}>
+      <LoginForm />
+    </Suspense>
   );
 }
