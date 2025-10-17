@@ -163,36 +163,39 @@ async function upsertFamilySelections() {
     };
   });
 
- const { error } = await supabase.from("rsvps").insert(row);
-    // ignore unique-duplicate errors (23505), throw others
-    if (error && error.code !== "23505") throw error;
+const { error } = await supabase
+  .from("rsvps")
+  .upsert(rows, {
+    onConflict: "first_name,last_name,group_id",
+    returning: "minimal",   // no payload needed
+  });
+
+if (error) throw error;
 }
 
-// MAIN submit handler — exactly one function, not nested
 const handleRsvpSubmit = async (e) => {
   e.preventDefault();
   const form = e.currentTarget;
 
-  // Force a lookup even if the user didn't blur
+  // Force a lookup even if the user never blurred
   const found  = await syncGroupFromForm(form);
   const gidNow = found?.gid ?? groupId;
   if (!gidNow || !family.length) {
     alert("We couldn’t find your name/group. Type First + Last (no middle), then click outside the field.");
     return;
   }
-  // keep state aligned, just in case
   if (groupId !== gidNow) setGroupId(gidNow);
 
   setSubmitting(true);
   try {
-    // idempotent lock (OK if duplicate)
+    // 1) Lock (idempotent—ok if duplicate)
     await supabase
       .from("group_locks")
       .insert({ group_id: gidNow })
       .select()
-      .single()
-      .catch(() => {});
+      .single();
 
+    // 2) Build API payload
     const fd = new FormData(form);
     const payload = {
       firstName: String(fd.get("firstName") || ""),
@@ -203,34 +206,33 @@ const handleRsvpSubmit = async (e) => {
       guests:    Number(fd.get("guests")    || selectedCount || 1),
       diet:      String(fd.get("diet")      || ""),
       message:   String(fd.get("message")   || ""),
-      groupId:   gidNow, // API maps this to group_id
-      selectedList: Object.keys(selected).filter(k => !!selected[k]),
+      groupId:   gidNow, // API maps to group_id
+      selectedList: Object.keys(selected).filter((k) => !!selected[k]),
     };
 
-    // send to API (ok if it returns non-200; we still upsert per-member)
+    // 3) Hit /api/rsvp (don’t let a non-200 stop us)
     const resp = await fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    // best-effort parse
     try {
       const body = await resp.json();
       if (!resp.ok) console.warn("RSVP API error:", body?.error || resp.statusText);
-    } catch {
-      /* ignore body parse errors */
-    }
+    } catch {}
 
-    // write per-member rows; ignores duplicates (23505)
+    // 4) Save per-member selections (ignores duplicates)
     await upsertFamilySelections();
 
-    // optional second lock (also idempotent)
+    // 5) (Optional) re-lock (also idempotent)
     await supabase
       .from("group_locks")
       .insert({ group_id: gidNow })
       .select()
-      .single()
-      .catch(() => {});
+      .single();
 
+    // 6) Go to thank-you
     router.replace(
       `/thank-you?firstName=${encodeURIComponent(payload.firstName)}&lastName=${encodeURIComponent(payload.lastName)}`
     );
@@ -241,7 +243,6 @@ const handleRsvpSubmit = async (e) => {
     setSubmitting(false);
   }
 };
-
 
   
   return (

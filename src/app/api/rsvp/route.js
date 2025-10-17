@@ -8,13 +8,14 @@ export const dynamic = "force-dynamic";
 
 console.log("[/api/rsvp] loaded");
 
+// --- Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM   = process.env.FROM_EMAIL || "Weddings <noreply@johnandkristen.ca>";
+const FROM = process.env.FROM_EMAIL || "Weddings <onboarding@resend.dev>";
 
+// --- Supabase (service role, server-side only)
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   console.warn("[/api/rsvp] Missing Supabase env vars");
 }
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -31,27 +32,30 @@ export async function POST(req) {
       return Response.json({ ok: false, error: "Missing required fields." }, { status: 400 });
     }
 
-    const attending = Boolean(payload.attending ?? (String(payload.attending || "yes") === "yes"));
+    const attending = Boolean(
+      payload.attending ?? (String(payload.attending || "yes") === "yes")
+    );
     const record = {
       first_name: payload.firstName,
-      last_name : payload.lastName,
-      email     : payload.email,
-      phone     : payload.phone ?? null,
+      last_name:  payload.lastName,
+      email:      payload.email,
+      phone:      payload.phone ?? null,
       attending,
-      guests    : Number(payload.guests ?? payload.guestsCount ?? 1),
-      diet      : payload.diet ?? null,
-      message   : payload.message ?? null,
-      group_id  : payload.groupId ?? null,
-
+      guests:     Number(payload.guests ?? payload.guestsCount ?? 1),
+      diet:       payload.diet ?? null,
+      message:    payload.message ?? null,
+      group_id:   payload.groupId ?? null,
     };
 
     // 1) Save to Supabase
-    const { data, error } = await supabase.from("rsvps").insert([record]).select().single();
+    const { data, error } = await supabase
+      .from("rsvps")
+      .insert([record])
+      .select()
+      .single();
     if (error) throw error;
 
-    // -------------------------------------------------------
-    // 2) EMAILS — guarded sends + useful logs (this is the part you asked for)
-    // -------------------------------------------------------
+    // 2) EMAILS
     const SITE = process.env.SITE_NAME || "Our Wedding";
     const adminList = (process.env.ADMIN_EMAIL || "")
       .split(",")
@@ -62,14 +66,13 @@ export async function POST(req) {
     console.log("[/api/rsvp] guestTo:", guestTo);
     console.log("[/api/rsvp] adminList:", adminList);
 
-    // compose bodies
-    const familyList  = (payload.selectedList || []).map(n => `<li>${n}</li>`).join("");
-    const familyHtml  = familyList ? `<ul>${familyList}</ul>` : "<em>No family selected</em>";
+    const familyList = (payload.selectedList || []).map(n => `<li>${n}</li>`).join("");
+    const familyHtml = familyList ? `<ul>${familyList}</ul>` : "<em>None</em>";
 
     const userHtml = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
         <h2>Thank you, ${record.first_name}!</h2>
-        <p>We’ve received your RSVP${record.group_id ? ` for group <strong>${record.group_id}</strong>` : ""}.
+        <p>We’ve received your RSVP${record.group_id ? ` for group <strong>${record.group_id}</strong>` : ""}.</p>
         <table style="margin-top:8px">
           <tr><td><strong>Name:</strong></td><td>${record.first_name} ${record.last_name}</td></tr>
           <tr><td><strong>Attending:</strong></td><td>${record.attending ? "Yes" : "No"}</td></tr>
@@ -83,15 +86,21 @@ export async function POST(req) {
         <p>— John & Kristen</p>
       </div>
     `;
+
+    // ✅ FIXED concatenation
     const userText =
-      `Thanks ${record.first_name}! We received your RSVP${record.group_id ? ` for group ${record.group_id}` : ""}.\n`
+      `Thanks ${record.first_name}! We received your RSVP` +
+      (record.group_id ? ` for group ${record.group_id}` : "") + `.\n` +
       `Attending: ${record.attending ? "Yes" : "No"}\n` +
       `Guests (incl. you): ${record.guests}\n` +
       (record.diet ? `Dietary: ${record.diet}\n` : "") +
       (record.message ? `Message: ${record.message}\n` : "") +
       `Family: ${(payload.selectedList || []).join(", ") || "None"}\n— John & Kristen`;
 
-    const adminSubject = `New RSVP — ${record.first_name} ${record.last_name}${record.group_id ? ` (${record.group_id})` : ""}`;
+    const adminSubject =
+      `New RSVP — ${record.first_name} ${record.last_name}` +
+      (record.group_id ? ` (${record.group_id})` : "");
+
     const adminHtml = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5">
         <h3>New RSVP</h3>
@@ -110,6 +119,7 @@ export async function POST(req) {
         <p style="margin-top:12px">RSVP id: ${data.id}</p>
       </div>
     `;
+
     const adminText =
       `New RSVP\nName: ${record.first_name} ${record.last_name}\nEmail: ${record.email}` +
       (record.phone ? `\nPhone: ${record.phone}` : "") +
@@ -126,35 +136,34 @@ export async function POST(req) {
       tasks.push(
         resend.emails.send({
           from: FROM,
-          to: guestTo, // string or array; must be non-empty
+          to: guestTo,
           subject: "RSVP Confirmation 💍",
           html: userHtml,
           text: userText,
           reply_to: adminList[0] || undefined,
-        })
+        }).catch(e => ({ error: e }))
       );
     } else {
       console.warn("[/api/rsvp] Skipping guest email: empty 'to'");
-      tasks.push(Promise.resolve({ data: null, error: { message: "guestTo empty" } }));
+      tasks.push(Promise.resolve({ error: { message: "guestTo empty" } }));
     }
 
     if (adminList.length) {
       tasks.push(
         resend.emails.send({
           from: FROM,
-          to: adminList, // array of admin emails
+          to: adminList,
           subject: adminSubject,
           html: adminHtml,
           text: adminText,
-        })
+        }).catch(e => ({ error: e }))
       );
     } else {
       console.warn("[/api/rsvp] Skipping admin email: ADMIN_EMAIL not set");
-      tasks.push(Promise.resolve({ data: null, error: { message: "adminList empty" } }));
+      tasks.push(Promise.resolve({ error: { message: "adminList empty" } }));
     }
 
     const [userSend, adminSend] = await Promise.all(tasks);
-
     console.log("[/api/rsvp] resend userSend:", userSend);
     console.log("[/api/rsvp] resend adminSend:", adminSend);
 
@@ -168,7 +177,6 @@ export async function POST(req) {
         adminError: adminSend?.error?.message || null,
       },
     });
-    // -------------------------------------------------------
 
   } catch (err) {
     console.error("[/api/rsvp] error:", err);

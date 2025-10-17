@@ -1,13 +1,15 @@
 // /src/app/thank-you/page.js
-// NO "use client"
 import Image from "next/image";
 
-// Ensure this page isn’t prerendered at build time
+// Make sure this isn't statically prerendered
 export const dynamic = "force-dynamic";
 
-export default function ThankYouPage({ searchParams }) {
-  const firstName = (searchParams?.firstName || "").toString();
-  const lastName  = (searchParams?.lastName  || "").toString();
+export default async function ThankYouPage({ searchParams }) {
+  // Next 15: searchParams is a Promise in server components
+  const params = await searchParams;
+
+  const firstName = (params?.firstName || "").toString();
+  const lastName  = (params?.lastName  || "").toString();
 
   return (
     <div className="relative w-full h-screen">
@@ -18,13 +20,18 @@ export default function ThankYouPage({ searchParams }) {
         className="object-cover brightness-90"
         priority
       />
+
       <div className="absolute inset-0 flex flex-col justify-center items-center text-white text-center px-6">
         <h1 className="mt-2 text-3xl md:text-4xl font-serif tracking-[-0.02em]">
           Thank you
         </h1>
-        <p className="text-3xl font-[var(--font-title,_inherit)]">
-          Love{firstName || lastName ? "," : ""} {firstName} {lastName}
-        </p>
+
+        {(firstName || lastName) ? (
+          <p className="text-3xl font-[var(--font-title,_inherit)]">
+            Love, {firstName} {lastName}
+          </p>
+        ) : null}
+
         <p className="mt-4 text-lg md:text-2xl font-light italic">
           Your confirmation has been received
         </p>
