@@ -172,7 +172,6 @@ const { error } = await supabase
 
 if (error) throw error;
 }
-
 const handleRsvpSubmit = async (e) => {
   e.preventDefault();
   const form = e.currentTarget;
@@ -188,12 +187,10 @@ const handleRsvpSubmit = async (e) => {
 
   setSubmitting(true);
   try {
-    // 1) Lock (idempotent—ok if duplicate)
+    // 1) 🔒 Idempotent lock — no 409s, no catch needed
     await supabase
       .from("group_locks")
-      .insert({ group_id: gidNow })
-      .select()
-      .single();
+      .upsert({ group_id: gidNow }, { onConflict: "group_id" });
 
     // 2) Build API payload
     const fd = new FormData(form);
@@ -206,7 +203,7 @@ const handleRsvpSubmit = async (e) => {
       guests:    Number(fd.get("guests")    || selectedCount || 1),
       diet:      String(fd.get("diet")      || ""),
       message:   String(fd.get("message")   || ""),
-      groupId:   gidNow, // API maps to group_id
+      groupId:   gidNow,
       selectedList: Object.keys(selected).filter((k) => !!selected[k]),
     };
 
@@ -216,23 +213,17 @@ const handleRsvpSubmit = async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    // best-effort parse
     try {
       const body = await resp.json();
       if (!resp.ok) console.warn("RSVP API error:", body?.error || resp.statusText);
-    } catch {}
+    } catch { /* ignore body parse errors */ }
 
-    // 4) Save per-member selections (ignores duplicates)
+    // 4) Save per-member selections (ignores duplicates inside)
     await upsertFamilySelections();
 
-    // 5) (Optional) re-lock (also idempotent)
-    await supabase
-      .from("group_locks")
-      .insert({ group_id: gidNow })
-      .select()
-      .single();
+    // ✅  No second lock needed
 
-    // 6) Go to thank-you
+    // 5) Go to thank-you
     router.replace(
       `/thank-you?firstName=${encodeURIComponent(payload.firstName)}&lastName=${encodeURIComponent(payload.lastName)}`
     );
@@ -243,6 +234,7 @@ const handleRsvpSubmit = async (e) => {
     setSubmitting(false);
   }
 };
+
 
   
   return (
@@ -819,7 +811,8 @@ const handleRsvpSubmit = async (e) => {
             <input
               id="firstName" name="firstName" type="text" required
                onChange={(e) => syncGroupFromForm(e.currentTarget.form)}
-              pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’-]+$" title="First name only (no middle names)."
+              pattern="[A-Za-zÀ-ÖØ-öø-ÿ'’\- ]+"
+              title="First name only (no middle names)."
               className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
               placeholder="e.g., Jasmine"
               
@@ -831,7 +824,8 @@ const handleRsvpSubmit = async (e) => {
             <input
               id="lastName" name="lastName" type="text" required
                onChange={(e) => syncGroupFromForm(e.currentTarget.form)}
-              pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'’ -]+$" title="Last name only (e.g., De Leon)."
+              pattern="[A-Za-zÀ-ÖØ-öø-ÿ'’\- ]+"
+              title="Last name only (e.g., De Leon)."
               className="rounded-lg border border-[#d8cfc6] bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c8b6a6]"
               placeholder="e.g., De Leon"
               onBlur={(e) => { e.currentTarget.value = e.currentTarget.value.trim().replace(/\s{2,}/g, ' '); syncGroupFromForm(e.currentTarget.form); }}
